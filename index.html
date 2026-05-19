@@ -216,6 +216,25 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chart-wrap { position: relative; height: 220px; margin: 4px 0 8px; }
 .chart-wrap canvas { width: 100% !important; height: 100% !important; }
 
+.scope-toggle {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #555;
+  margin: -2px 0 12px;
+  flex-wrap: wrap;
+}
+.scope-toggle .seg {
+  border: 1px solid #d6d3ca; background: #fff;
+  padding: 3px 10px; font: inherit; font-size: 11.5px;
+  cursor: pointer; color: #555; border-radius: 5px;
+}
+.scope-toggle .seg.active {
+  background: #1f1f1f; color: #fff; border-color: #1f1f1f;
+}
+.scope-tag {
+  font-size: 12px; font-weight: 400; color: #6b6b6b;
+  letter-spacing: 0;
+}
+
 .legend-icons { display: flex; gap: 14px; font-size: 12px; color: #6b6b6b; margin-top: 8px; flex-wrap: wrap; }
 .legend-icons span { display: inline-flex; align-items: center; gap: 4px; }
 .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
@@ -447,6 +466,12 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
     <div class="card">
       <h2 id="footprintHeading">Estimated annual footprint</h2>
+      <div class="scope-toggle">
+        <span>Scope:</span>
+        <button class="seg active" data-scope="op" type="button">Operational</button>
+        <button class="seg" data-scope="full" type="button">+ Embodied</button>
+        <i class="tip" tabindex="0" data-tip="Operational = the energy/carbon/water used while the AI runs. Embodied = the energy/carbon/water used to manufacture the hardware (GPUs, servers) and build the datacenter. Embodied is a fixed cost amortized across the hardware's lifetime.">?</i>
+      </div>
 
       <div class="results">
         <div class="metric"><div class="label">Energy</div><div class="value"><span id="vE">0</span><span class="unit" id="uE">kWh</span></div></div>
@@ -495,26 +520,32 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
   </div>
 
   <div class="disclosure">
-    <h3>What this tool does and doesn't include</h3>
+    <h3>What this tool does and doesn't include
+      <span class="scope-tag op-mode"> · Operational only</span>
+      <span class="scope-tag embodied-mode" style="display:none"> · Operational + embodied</span>
+    </h3>
     <p style="margin: 0 0 6px;"><strong>Included in the estimates:</strong></p>
     <ul>
       <li>Operational energy for the AI compute itself (CPU/GPU/TPU)</li>
       <li>Datacenter cooling and overhead (typical hyperscale PUE ≈ 1.12)</li>
       <li>Carbon based on your selected grid mix (country, sub-region, or specific cloud region)</li>
       <li>Direct cooling water at the datacenter</li>
+      <li class="embodied-mode" style="display:none"><strong>Embodied energy, carbon, and water</strong> — manufacturing GPUs and servers, building the datacenter, end-of-line semiconductor fab water. Added as mid-range multipliers on top of operational: +12% energy, +15% carbon, +25% water.</li>
     </ul>
     <p style="margin: 8px 0 6px;"><strong>Not included (would change the picture in ways this tool doesn't model):</strong></p>
     <ul>
-      <li><strong>Embodied carbon of hardware</strong> — manufacturing GPUs, servers, and datacenter buildings. Adds roughly 5–15% on top of operational figures.</li>
+      <li class="op-mode"><strong>Embodied carbon, energy, and water of hardware</strong> — manufacturing GPUs, servers, and datacenter buildings. Toggle <em>Scope → + Embodied</em> at the top of the results panel to add these as mid-range estimates.</li>
       <li><strong>Network transit and your device</strong> — the energy from your ISP through transit providers to the datacenter, plus your laptop/phone running while you wait. Small per query, but non-zero.</li>
       <li><strong>Training-cost amortization</strong> — for popular models like ChatGPT, training divided across billions of queries is tiny; for niche or rarely-used models, training can dominate the lifetime cost.</li>
       <li><strong>Provider-reported sustainability claims</strong> — many cloud providers buy renewable-energy credits or offsets. This tool uses physical grid intensity, not "as-reported net-zero" figures.</li>
-      <li><strong>End-of-life e-waste</strong> — retiring GPUs every 3–5 years creates significant waste streams not captured here.</li>
+      <li><strong>End-of-life e-waste</strong> — retiring GPUs every 3–5 years creates significant waste streams beyond what the embodied figures capture.</li>
       <li><strong>Specific query characteristics</strong> — output length, context size, and reasoning depth can swing per-query energy by 10–100×. The figures here are mid-range averages.</li>
     </ul>
 
     <h3 style="margin-top: 14px;">Brief methodology</h3>
     <p style="margin: 0;">
+      <strong class="op-mode">Operational only:</strong>
+      <strong class="embodied-mode" style="display:none">Operational + embodied:</strong>
       Energy figures come from peer-reviewed research (Luccioni et al., Patterson et al., Strubell et al., de Vries),
       published provider model cards (Meta Llama, Mistral, Anthropic, Google), and Hugging Face's <a href="https://huggingface.co/AIEnergyScore" target="_blank" rel="noopener">AI Energy Score</a> benchmarks. For each operation, a single mid-range per-instance value is used; the optional model picker on chat and image rows lets you swap in a specific model's published or estimated figure.
       <br><br>
@@ -523,14 +554,22 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
       <br><br>
       Water is operational + electricity-related, modeled as a flat per-instance value. Site- and season-specific water variation is not modeled.
       <br><br>
+      <span class="embodied-mode" style="display:none">
+        <strong>Embodied (when scope = "+ Embodied"):</strong> applied as flat percentage multipliers on top of operational figures —
+        +12% energy (Patterson et al. 2022; Microsoft sustainability reports),
+        +15% carbon (Gupta et al. "Chasing Carbon" 2022; Google / Microsoft public methodologies),
+        +25% water (TSMC and Intel semiconductor-fab disclosures for advanced-node manufacturing).
+        These are mid-range; actual embodied share grows in absolute terms as operational decarbonizes, so for very clean grids (Vermont, Quebec, Norway) embodied can dominate. Tool uses fixed percentages for simplicity.
+        <br><br>
+      </span>
       All numbers should be read as <em>order of magnitude</em>. They're useful for comparison ("agent vs chat reply," "Virginia vs Oregon," "10/day vs 100/day") but not for compliance reporting.
     </p>
   </div>
 
   <div class="footer-meta">
-    Power grid data current as of November 2024. Grid intensities update annually as new EPA / Ember / CER datasets release. Inference figures will evolve as providers publish more transparent reporting.
+    <strong>Data current as of November 2024.</strong> Grid intensities update annually as new EPA / Ember / CER datasets release. Inference figures will evolve as providers publish more transparent reporting.
     <br>
-    Built as an estimation tool and not for compliance reporting or contractual carbon accounting.
+    Built as an estimation tool — not for compliance reporting or contractual carbon accounting.
   </div>
 
   <div class="attribution">
@@ -603,41 +642,64 @@ const MODELS = {
 const CAT_COLOR = { inference: "#6aa84f", generation: "#e69138", agent: "#1f78b4", finetune: "#674ea7", pretrain: "#cc4125" };
 
 // Grid carbon intensity (gCO2/kWh), 2023 generation averages.
+// Sources: Ember Yearly Electricity Data 2024, IEA Electricity 2024.
 const GRID = [
-  ["IS", "Iceland",          28],
-  ["NO", "Norway",            30],
-  ["SE", "Sweden",            41],
-  ["FR", "France",            56],
-  ["CH", "Switzerland",       47],
-  ["BR", "Brazil",            95],
-  ["CO", "Colombia",         160],
-  ["CA", "Canada",           130],
-  ["NZ", "New Zealand",      120],
-  ["FI", "Finland",          110],
-  ["DK", "Denmark",          151],
-  ["GB", "United Kingdom",   207],
-  ["ES", "Spain",            215],
-  ["PT", "Portugal",         185],
-  ["IT", "Italy",            280],
-  ["MX", "Mexico",           420],
-  ["US", "United States",    390],
-  ["KR", "South Korea",      435],
-  ["JP", "Japan",            462],
-  ["DE", "Germany",          380],
-  ["NL", "Netherlands",      355],
-  ["BE", "Belgium",          167],
-  ["IE", "Ireland",          295],
-  ["AU", "Australia",        549],
-  ["TR", "Turkey",           468],
-  ["TW", "Taiwan",           575],
-  ["CN", "China",            583],
-  ["ZA", "South Africa",     708],
-  ["IN", "India",            713],
-  ["PL", "Poland",           662],
-  ["SA", "Saudi Arabia",     540],
-  ["AE", "UAE",              498],
-  ["SG", "Singapore",        408],
-  ["WORLD", "World average", 480],
+  ["AR", "Argentina",  367],
+  ["AU", "Australia",  549],
+  ["AT", "Austria",  113],
+  ["BD", "Bangladesh",  644],
+  ["BE", "Belgium",  167],
+  ["BR", "Brazil",   95],
+  ["CA", "Canada",  130],
+  ["CL", "Chile",  369],
+  ["CN", "China",  583],
+  ["CO", "Colombia",  160],
+  ["CZ", "Czech Republic",  410],
+  ["DK", "Denmark",  151],
+  ["EG", "Egypt",  477],
+  ["FI", "Finland",  110],
+  ["FR", "France",   56],
+  ["DE", "Germany",  380],
+  ["GR", "Greece",  410],
+  ["HU", "Hungary",  265],
+  ["IS", "Iceland",   28],
+  ["IN", "India",  713],
+  ["ID", "Indonesia",  695],
+  ["IE", "Ireland",  295],
+  ["IL", "Israel",  595],
+  ["IT", "Italy",  280],
+  ["JP", "Japan",  462],
+  ["KE", "Kenya",  118],
+  ["MY", "Malaysia",  642],
+  ["MX", "Mexico",  420],
+  ["MA", "Morocco",  610],
+  ["NL", "Netherlands",  355],
+  ["NZ", "New Zealand",  120],
+  ["NG", "Nigeria",  367],
+  ["NO", "Norway",   30],
+  ["PK", "Pakistan",  425],
+  ["PE", "Peru",  213],
+  ["PH", "Philippines",  626],
+  ["PL", "Poland",  662],
+  ["PT", "Portugal",  185],
+  ["RO", "Romania",  282],
+  ["RU", "Russia",  411],
+  ["SA", "Saudi Arabia",  540],
+  ["SG", "Singapore",  408],
+  ["ZA", "South Africa",  708],
+  ["KR", "South Korea",  435],
+  ["ES", "Spain",  215],
+  ["SE", "Sweden",   41],
+  ["CH", "Switzerland",   47],
+  ["TW", "Taiwan",  575],
+  ["TH", "Thailand",  489],
+  ["TR", "Turkey",  468],
+  ["AE", "UAE",  498],
+  ["UA", "Ukraine",  250],
+  ["GB", "United Kingdom",  207],
+  ["US", "United States",  390],
+  ["VN", "Vietnam",  525],
+  ["WORLD", "World average",  480],
 ];
 
 // Sub-national CO2 intensity (gCO2/kWh) by country.
@@ -734,18 +796,29 @@ const DC_PRESETS = [
 
 // Timezone → country code (best-effort, common cases).
 const TZ_MAP = {
+  // Europe
   "Europe/London":"GB","Europe/Dublin":"IE","Europe/Paris":"FR","Europe/Berlin":"DE","Europe/Madrid":"ES",
   "Europe/Lisbon":"PT","Europe/Rome":"IT","Europe/Amsterdam":"NL","Europe/Brussels":"BE","Europe/Stockholm":"SE",
   "Europe/Oslo":"NO","Europe/Copenhagen":"DK","Europe/Helsinki":"FI","Europe/Warsaw":"PL","Europe/Zurich":"CH",
-  "Europe/Reykjavik":"IS","Europe/Istanbul":"TR",
+  "Europe/Reykjavik":"IS","Europe/Istanbul":"TR","Europe/Vienna":"AT","Europe/Athens":"GR","Europe/Prague":"CZ",
+  "Europe/Budapest":"HU","Europe/Bucharest":"RO","Europe/Moscow":"RU","Europe/Kiev":"UA","Europe/Kyiv":"UA",
+  // Americas
   "America/New_York":"US","America/Chicago":"US","America/Denver":"US","America/Los_Angeles":"US",
   "America/Phoenix":"US","America/Anchorage":"US","America/Detroit":"US","America/Indiana/Indianapolis":"US",
   "America/Toronto":"CA","America/Vancouver":"CA","America/Edmonton":"CA","America/Halifax":"CA",
   "America/Mexico_City":"MX","America/Sao_Paulo":"BR","America/Bogota":"CO",
+  "America/Argentina/Buenos_Aires":"AR","America/Santiago":"CL","America/Lima":"PE",
+  // Asia
   "Asia/Tokyo":"JP","Asia/Seoul":"KR","Asia/Shanghai":"CN","Asia/Hong_Kong":"CN","Asia/Taipei":"TW",
   "Asia/Singapore":"SG","Asia/Kolkata":"IN","Asia/Calcutta":"IN","Asia/Dubai":"AE","Asia/Riyadh":"SA",
+  "Asia/Jakarta":"ID","Asia/Bangkok":"TH","Asia/Ho_Chi_Minh":"VN","Asia/Saigon":"VN",
+  "Asia/Kuala_Lumpur":"MY","Asia/Manila":"PH","Asia/Karachi":"PK","Asia/Dhaka":"BD","Asia/Jerusalem":"IL",
+  "Asia/Tel_Aviv":"IL",
+  // Oceania
   "Australia/Sydney":"AU","Australia/Melbourne":"AU","Australia/Brisbane":"AU","Australia/Perth":"AU",
-  "Pacific/Auckland":"NZ","Africa/Johannesburg":"ZA"
+  "Pacific/Auckland":"NZ",
+  // Africa
+  "Africa/Johannesburg":"ZA","Africa/Cairo":"EG","Africa/Nairobi":"KE","Africa/Lagos":"NG","Africa/Casablanca":"MA"
 };
 
 // Timezones that pin down a single sub-region with reasonable confidence.
@@ -802,6 +875,18 @@ let customCi = null;
 let chart = null;
 let freq = "day"; // day | week | month | year | once
 let modelChoices = {};     // op key -> selected model id; "" or missing = use OPS default
+let includeEmbodied = false; // false = operational only; true = operational + embodied
+
+// Mid-range multipliers applied on top of operational figures when scope = "+ Embodied".
+// Energy: hardware + datacenter construction embodied energy ≈ 12% of operational lifetime energy
+//         (Patterson 2022; Microsoft sustainability reports).
+// Carbon: GPU + server + building embodied carbon ≈ 15% on top of operational
+//         (Gupta et al. "Chasing Carbon" 2022; Google / Microsoft public methodologies).
+// Water:  semiconductor-fab water (advanced nodes) ≈ 25% of operational water (TSMC, Intel reports).
+const EMBODIED_PCT = { energy: 0.12, carbon: 0.15, water: 0.25 };
+function scopeMult(resource) {
+  return includeEmbodied ? (1 + EMBODIED_PCT[resource]) : 1;
+}
 
 // Resolve effective per-instance energy/water — model override if chosen, else OPS default.
 function opKwh(op) {
@@ -993,13 +1078,14 @@ function decorateOps() {
 }
 function updatePerInstance() {
   const ci = currentCi();
+  const eM = scopeMult("energy"), cM = scopeMult("carbon"), wM = scopeMult("water");
   for (const op in OPS) {
     const el = document.querySelector(`[data-op-per="${op}"]`);
     if (!el) continue;
     const meta = OPS[op];
-    const kwh = opKwh(op);
-    const co2 = (kwh * ci) / 1000;  // kg
-    const water = opWaterL(op);
+    const kwh = opKwh(op) * eM;
+    const co2 = (opKwh(op) * ci / 1000) * cM;
+    const water = opWaterL(op) * wM;
     el.innerHTML =
       `<strong>One ${meta.label} ≈</strong> ` +
       `${format(kwh, "kWh").join(" ")} &nbsp;·&nbsp; ` +
@@ -1064,6 +1150,16 @@ function applyFreqCopy() {
   // also update Chart axis label on next render via recompute()
 }
 
+function applyScope() {
+  // Toggle the disclosure / methodology variants
+  document.querySelectorAll(".op-mode").forEach(el => el.style.display = includeEmbodied ? "none" : "");
+  document.querySelectorAll(".embodied-mode").forEach(el => el.style.display = includeEmbodied ? "" : "none");
+  // Update the segmented control state
+  document.querySelectorAll(".scope-toggle .seg").forEach(b => {
+    b.classList.toggle("active", (b.dataset.scope === "full") === includeEmbodied);
+  });
+}
+
 function recompute() {
   updatePerInstance();
   syncUrl();
@@ -1072,12 +1168,13 @@ function recompute() {
   let totalKwh = 0, totalCO2g = 0, totalWater = 0;
   const rows = [];
 
+  const eM = scopeMult("energy"), cM = scopeMult("carbon"), wM = scopeMult("water");
   for (const op in counts) {
     const meta = OPS[op];
     const scaledQty = scaleQty(op, counts[op]);
-    const kwh = scaledQty * opKwh(op);
-    const co2g = kwh * ci;
-    const water = scaledQty * opWaterL(op);
+    const kwh   = scaledQty * opKwh(op)    * eM;
+    const co2g  = scaledQty * opKwh(op) * ci * cM;
+    const water = scaledQty * opWaterL(op) * wM;
     totalKwh += kwh;
     totalCO2g += co2g;
     totalWater += water;
@@ -1236,6 +1333,7 @@ function serializeState() {
   if (dcLocation)         params.set("dc", dcLocation);
   if (customCi != null)   params.set("ci", customCi);
   if (document.body.classList.contains("detail")) params.set("v", "d");
+  if (includeEmbodied)    params.set("e", "1");
   document.querySelectorAll(".op").forEach(opDiv => {
     const op = opDiv.dataset.op;
     if (!op) return;
@@ -1272,6 +1370,7 @@ function applyUrlState() {
     document.getElementById("mDetail").classList.add("active");
     document.getElementById("mSimple").classList.remove("active");
   }
+  if (params.get("e") === "1") includeEmbodied = true;
 
   // Apply to dropdowns / inputs
   document.getElementById("region").value = region;
@@ -1355,6 +1454,13 @@ function initEvents() {
     applyFreqCopy();
     recompute();
   });
+  document.querySelectorAll(".scope-toggle .seg").forEach(btn => {
+    btn.addEventListener("click", () => {
+      includeEmbodied = (btn.dataset.scope === "full");
+      applyScope();
+      recompute();
+    });
+  });
   document.getElementById("resetBtn").addEventListener("click", () => {
     // Restore every slider to its HTML defaultValue
     document.querySelectorAll(".op input[type=range]").forEach(input => {
@@ -1371,6 +1477,9 @@ function initEvents() {
     // Reset frequency
     freq = "day";
     document.getElementById("freq").value = "day";
+    // Back to Operational-only scope
+    includeEmbodied = false;
+    applyScope();
     // Back to Simple mode
     document.body.classList.remove("detail"); document.body.classList.add("simple");
     document.getElementById("mSimple").classList.add("active");
@@ -1391,7 +1500,6 @@ function initEvents() {
     const btn = document.getElementById("shareBtn");
     const original = btn.textContent;
     try {
-      // Force a sync URL update first
       try {
         const qs = serializeState();
         const url = window.location.pathname + (qs ? "?" + qs : "");
@@ -1402,7 +1510,6 @@ function initEvents() {
       btn.classList.add("copied");
       setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1800);
     } catch (e) {
-      // Fallback: try selecting a temp input
       const t = document.createElement("input");
       t.value = window.location.href;
       document.body.appendChild(t); t.select();
@@ -1417,12 +1524,12 @@ function initEvents() {
 populateRegions();
 populateDcLocations();
 decorateOps();
-// If the URL has a saved scenario, apply it. Otherwise fall back to auto-detect.
 if (!applyUrlState()) {
   detect();
 }
 initEvents();
 applyFreqCopy();
+applyScope();
 recompute();
 </script>
 </body>
