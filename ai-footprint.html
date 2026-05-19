@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Footprint Estimator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fafaf7;
+  color: #1f1f1f;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+.sub { color: #666; font-size: 13px; margin-bottom: 10px; }
+.intro {
+  background: #fff; border: 1px solid #e6e3da; border-left: 3px solid #6aa84f;
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;
+  font-size: 13px; line-height: 1.55; color: #3a3a3a;
+}
+.intro strong { color: #1f1f1f; }
+.intro .estimate-note {
+  display: block; margin-top: 6px; font-size: 12px; color: #6b6b6b;
+}
+.intro .estimate-note em { font-style: italic; color: #1f1f1f; }
+.share-btn {
+  border: 1px solid #d6d3ca; background: #fff; padding: 5px 12px;
+  font: inherit; font-size: 12px; border-radius: 6px; cursor: pointer; color: #1f1f1f;
+}
+.share-btn:hover { background: #f1efe7; }
+.share-btn.copied { background: #6aa84f; color: #fff; border-color: #6aa84f; }
+.attribution {
+  margin-top: 8px; padding: 8px 14px; font-size: 11.5px; color: #6b6b6b;
+  text-align: center; line-height: 1.5;
+}
+.attribution a { color: #475569; }
+
+/* Tooltips on technical terms */
+.tip {
+  display: inline-block;
+  width: 14px; height: 14px; line-height: 14px;
+  text-align: center; font-size: 9px; font-weight: 700;
+  background: #d6d3ca; color: #1f1f1f;
+  border-radius: 50%;
+  margin: 0 2px 0 3px;
+  vertical-align: middle;
+  cursor: help; position: relative;
+  font-style: normal;
+}
+.tip:hover { background: #6aa84f; color: #fff; }
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 6px);   /* below the icon */
+  bottom: auto;
+  right: 0;                /* anchor to icon's right edge */
+  left: auto;
+  transform: none;
+  background: #1f1f1f; color: #fff;
+  padding: 7px 10px; border-radius: 6px;
+  font-size: 11.5px; font-weight: 400; line-height: 1.45;
+  width: max-content;
+  max-width: 230px;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0; visibility: hidden;
+  transition: opacity 120ms ease-out;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.tip:hover::after, .tip:focus::after { opacity: 1; visibility: visible; }
+.tip:focus { outline: 2px solid #6aa84f; outline-offset: 2px; }
+
+/* Responsive: collapse the topbar on narrow screens so dropdowns stack */
+@media (max-width: 760px) {
+  .topbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .topbar .loc {
+    flex-direction: column; align-items: stretch; gap: 8px; width: 100%;
+  }
+  .topbar .loc label { display: flex; align-items: center; gap: 6px; width: 100%; }
+  .topbar .loc select, .topbar .loc input { flex: 1; min-width: 0; }
+  .topbar .loc-pill { align-self: flex-start; }
+  .topbar .modes, .topbar .share-btn { font-size: 11.5px; }
+  .topbar > div[style*="flex"] { justify-content: space-between; flex-wrap: wrap; }
+  /* Tooltips need viewport-aware width on tiny screens */
+  .tip::after { width: 200px; }
+}
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  background: #fff; border: 1px solid #e6e3da; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 16px;
+}
+.loc { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.loc-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #f1efe7; padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; color: #4a4a4a;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #6aa84f; }
+select, input[type="number"] {
+  font: inherit; padding: 5px 8px; border: 1px solid #d6d3ca;
+  border-radius: 6px; background: #fff;
+}
+.modes {
+  display: inline-flex; background: #f1efe7; border-radius: 8px; padding: 3px;
+}
+.modes button {
+  border: 0; background: transparent; padding: 5px 12px; border-radius: 6px;
+  font: inherit; cursor: pointer; color: #555;
+}
+.modes button.active { background: #fff; color: #1f1f1f; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+.grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  align-items: start;
+}
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: #fff; border: 1px solid #e6e3da; border-radius: 10px;
+  padding: 16px;
+}
+/* Pin the results card so it stays visible while scrolling the operation list */
+@media (min-width: 761px) {
+  .grid > .card:nth-child(2) {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+  }
+}
+.card h2 { margin: 0 0 10px; font-size: 15px; }
+.op-group-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: #8a8a8a; margin: 18px 0 4px;
+}
+.op-group-title:first-of-type { margin-top: 4px; }
+.op-group { border-top: 1px solid #e6e3da; padding-top: 4px; margin-top: 10px; }
+.op-group:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+.op {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 14px;
+  align-items: center; padding: 10px 0;
+  border-top: 1px solid #f0ede4;
+}
+.op-group .op:first-of-type { border-top: 0; padding-top: 4px; }
+.op-eg { color: #6b6b6b; font-size: 11.5px; grid-column: 1 / -1; font-style: italic; }
+.op-title { font-weight: 600; font-size: 13px; }
+.op-desc { color: #6b6b6b; font-size: 12px; grid-column: 1 / -1; margin-bottom: 4px; }
+.op-controls { display: flex; gap: 8px; align-items: center; }
+.op-controls input[type="range"] { width: 140px; }
+.op-controls .qty { font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; font-size: 13px; }
+.quickset {
+  border: 1px solid #d6d3ca; background: #fff; padding: 2px 7px;
+  font: inherit; font-size: 11px; border-radius: 4px; cursor: pointer; color: #555;
+}
+.quickset:hover { background: #f1efe7; color: #1f1f1f; }
+.quickset.active { background: #1f1f1f; color: #fff; border-color: #1f1f1f; }
+.op-per {
+  grid-column: 1 / -1; font-size: 11.5px; color: #4a4a4a;
+  margin-top: 2px; padding: 4px 9px; background: #f7f5ee;
+  border-radius: 4px; line-height: 1.4;
+}
+.op-per strong { color: #1f1f1f; font-weight: 600; }
+.op-model { grid-column: 1 / -1; font-size: 11.5px; color: #555; margin-top: 4px; }
+.op-model select { font-size: 11.5px; padding: 2px 6px; max-width: 250px; }
+.disclosure {
+  background: #fff; border: 1px solid #e6e3da; border-radius: 10px;
+  padding: 16px; margin-top: 16px; font-size: 13px; line-height: 1.55;
+}
+.disclosure h3 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.disclosure ul { margin: 4px 0 12px; padding-left: 20px; }
+.disclosure li { margin: 3px 0; }
+.footer-meta {
+  margin-top: 16px; padding: 10px 14px; font-size: 11.5px; color: #6b6b6b;
+  background: #f7f5ee; border-radius: 8px; line-height: 1.5;
+  text-align: center;
+}
+.footer-meta strong { color: #1f1f1f; }
+
+.results {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 14px;
+}
+.metric {
+  background: #f7f5ee; border-radius: 8px; padding: 10px 12px;
+}
+.metric .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b6b6b; }
+.metric .value { font-size: 22px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.metric .unit { font-size: 12px; color: #6b6b6b; margin-left: 3px; }
+
+.equiv { background: #f7f5ee; border-radius: 8px; padding: 12px 14px; margin-top: 6px; font-size: 13px; color: #3a3a3a; }
+.equiv strong { color: #1f1f1f; }
+.equiv ul { margin: 6px 0 0; padding-left: 18px; }
+.equiv li { margin: 3px 0; }
+
+.detail-block { display: none; }
+body.detail .detail-block { display: block; }
+body.detail .simple-block { display: none; }
+
+table.bd { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+table.bd th, table.bd td { text-align: left; padding: 6px 4px; border-bottom: 1px solid #f0ede4; }
+table.bd th { color: #6b6b6b; font-weight: 500; }
+table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.sources { font-size: 12px; color: #6b6b6b; margin-top: 14px; line-height: 1.55; }
+.sources a { color: #475569; }
+
+.note { font-size: 11.5px; color: #8a8a8a; margin-top: 10px; }
+.chart-wrap { position: relative; height: 220px; margin: 4px 0 8px; }
+.chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+.legend-icons { display: flex; gap: 14px; font-size: 12px; color: #6b6b6b; margin-top: 8px; flex-wrap: wrap; }
+.legend-icons span { display: inline-flex; align-items: center; gap: 4px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body class="simple">
+<div class="wrap">
+
+  <h1>AI Footprint Estimator</h1>
+  <div class="sub">Compare the energy, carbon, and water cost of different AI operations — adjusted to your local electricity grid.</div>
+  <div class="intro">
+    <strong>How to use:</strong> Move the sliders on the left to match how you actually use AI. Pick your region (and a specific model where it matters) so the math reflects your local electricity grid. The panel on the right shows the resulting annual footprint, and what it's roughly equivalent to in everyday terms.
+    <span class="estimate-note">All numbers are <em>order-of-magnitude estimates</em> — useful for comparison, not for compliance reporting. See the methodology section below for what's included and what isn't.</span>
+  </div>
+
+  <div class="topbar">
+    <div class="loc">
+      <span class="loc-pill"><span class="dot" id="dot"></span> <span id="locLabel">Detecting…</span></span>
+      <label style="font-size:12px;color:#555;">Region:
+        <select id="region"></select>
+      </label>
+      <label id="subregionLabel" style="font-size:12px;color:#555;display:none;"><span id="subregionLabelText">Subregion</span>:
+        <select id="subregion"></select>
+      </label>
+      <label style="font-size:12px;color:#555;">Compute location<i class="tip" tabindex="0" data-tip="Where the AI compute actually runs. This usually differs from where you live — your queries are likely served from a hyperscale datacenter (Virginia, Iowa, Oregon, etc.). When set, this overrides your local grid for the carbon calculation.">?</i>:
+        <select id="dcLocation"></select>
+      </label>
+      <label style="font-size:12px;color:#555;">Frequency<i class="tip" tabindex="0" data-tip="How often you do each operation. Per-day / week / month / year all get annualized (×365, ×52, etc.) so totals are comparable. One-time treats sliders as a single event with no annualization.">?</i>:
+        <select id="freq">
+          <option value="day">Per day (annualized)</option>
+          <option value="week">Per week (annualized)</option>
+          <option value="month">Per month (annualized)</option>
+          <option value="year">Per year</option>
+          <option value="once">One-time event</option>
+        </select>
+      </label>
+      <label style="font-size:12px;color:#555;">Override gCO₂/kWh:
+        <input type="number" id="customCi" min="0" max="2000" step="1" style="width:80px" placeholder="auto">
+      </label>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <button id="shareBtn" class="share-btn" type="button" title="Copy a link to this exact scenario">🔗 Copy share link</button>
+      <button id="resetBtn" class="share-btn" type="button" title="Reset all sliders, models, and selections to defaults">↻ Reset</button>
+      <div class="modes" role="tablist">
+        <button id="mSimple" class="active" type="button">Simple</button>
+        <button id="mDetail" type="button">Detailed</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Choose what you're running</h2>
+
+      <div class="op-group">
+        <div class="op-group-title">Everyday AI use</div>
+
+        <div class="op" data-op="search">
+          <div class="op-title">AI-powered web search</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="300" value="10" step="1">
+            <span class="qty">10 / day</span>
+          </div>
+          <div class="op-desc">A regular search where AI summarizes the answer for you.</div>
+          <div class="op-eg">Examples: Google's AI Overviews, Bing Copilot search, Perplexity.</div>
+        </div>
+
+        <div class="op" data-op="chatSmall">
+          <div class="op-title">Quick AI question</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="300" value="20" step="1">
+            <span class="qty">20 / day</span>
+          </div>
+          <div class="op-desc">A short reply from a fast, lightweight assistant.</div>
+          <div class="op-eg">Examples: Claude Haiku, GPT-4o mini, Gemini Flash, on-device Apple Intelligence.</div>
+        </div>
+
+        <div class="op" data-op="chatLarge">
+          <div class="op-title">Detailed AI answer</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="300" value="10" step="1">
+            <span class="qty">10 / day</span>
+          </div>
+          <div class="op-desc">A thoughtful reply from a top-tier model — drafting, coding, reasoning.</div>
+          <div class="op-eg">Examples: ChatGPT (GPT-4/5), Claude Sonnet/Opus, Gemini Pro/Ultra.</div>
+        </div>
+
+        <div class="op" data-op="ragQuery">
+          <div class="op-title">RAG-augmented AI answer<i class="tip" tabindex="0" data-tip="RAG = Retrieval-Augmented Generation. The AI first searches a set of documents, then writes an answer grounded in what it found. Used by chatbots over uploaded files or company knowledge bases.">?</i></div>
+          <div class="op-controls">
+            <input type="range" min="0" max="300" value="0" step="1">
+            <span class="qty">0 / day</span>
+          </div>
+          <div class="op-desc">Slightly higher cost than a plain chat reply because of the lookup step.</div>
+          <div class="op-eg">Examples: ChatGPT searching its uploaded knowledge files; an internal corporate chatbot grounded on company docs; Notion Q&amp;A.</div>
+        </div>
+
+        <div class="op" data-op="codeCompletion">
+          <div class="op-title">Code suggestion (in-IDE autocomplete)</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="2000" value="0" step="10">
+            <span class="qty">0 / day</span>
+          </div>
+          <div class="op-desc">One inline code suggestion from a coding assistant. Tiny per-call but a busy developer can rack up hundreds per day.</div>
+          <div class="op-eg">Examples: GitHub Copilot, Cursor, Tabnine, Amazon Q Developer.</div>
+        </div>
+
+        <div class="op" data-op="embedding">
+          <div class="op-title">Embedding / semantic search query<i class="tip" tabindex="0" data-tip="An embedding turns a piece of text into a list of numbers that captures its meaning. Used to find similar items, power semantic search, and feed the retrieval step inside RAG. Much cheaper than a chat reply.">?</i></div>
+          <div class="op-controls">
+            <input type="range" min="0" max="2000" value="0" step="10">
+            <span class="qty">0 / day</span>
+          </div>
+          <div class="op-desc">Cheaper than a chat reply by roughly 50×.</div>
+          <div class="op-eg">Examples: Algolia AI search, the retrieval step inside ChatGPT custom GPTs, recommendation engines.</div>
+        </div>
+
+        <div class="op" data-op="voiceAudio">
+          <div class="op-title">AI voice or audio (per minute)</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="240" value="0" step="1">
+            <span class="qty">0 / day</span>
+          </div>
+          <div class="op-desc">One minute of AI transcription, voice cloning, text-to-speech, or AI-generated music.</div>
+          <div class="op-eg">Examples: Whisper transcription, ElevenLabs TTS, Suno / Udio music gen, voice mode in ChatGPT.</div>
+        </div>
+
+        <div class="op" data-op="image">
+          <div class="op-title">AI-generated image</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="200" value="5" step="1">
+            <span class="qty">5 / day</span>
+          </div>
+          <div class="op-desc">One picture created by AI from a prompt.</div>
+          <div class="op-eg">Examples: Midjourney, DALL·E, Stable Diffusion, Adobe Firefly.</div>
+        </div>
+
+        <div class="op" data-op="video">
+          <div class="op-title">AI-generated video (per second of output)</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="120" value="0" step="1">
+            <span class="qty">0 sec / day</span>
+          </div>
+          <div class="op-desc">One second of AI-generated video. Energy varies widely and audited numbers are scarce.</div>
+          <div class="op-eg">Examples: OpenAI Sora, Google Veo, Runway Gen-3.</div>
+        </div>
+
+        <div class="op" data-op="agentSimple">
+          <div class="op-title">AI agent — quick task</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="50" value="0" step="1">
+            <span class="qty">0 tasks / day</span>
+          </div>
+          <div class="op-desc">An AI does a short multi-step job for you (~10 model calls per task).</div>
+          <div class="op-eg">Examples: sorting your inbox, summarizing a doc, scheduling a meeting via an assistant.</div>
+        </div>
+
+        <div class="op" data-op="agentComplex">
+          <div class="op-title">AI agent — complex task</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="20" value="0" step="1">
+            <span class="qty">0 tasks / day</span>
+          </div>
+          <div class="op-desc">An AI works for minutes-to-hours on a bigger job (~100 model calls per task).</div>
+          <div class="op-eg">Examples: a coding agent writing a feature, a research agent producing a report, an "operator" agent that browses the web for you.</div>
+        </div>
+      </div>
+
+      <div class="op-group">
+        <div class="op-group-title">Custom AI for your data</div>
+
+        <div class="op" data-op="finetuneLora">
+          <div class="op-title">Customize an AI on your data — small scale<i class="tip" tabindex="0" data-tip="Fine-tuning teaches a pre-trained AI new patterns from your data. 'Small scale' here means LoRA — a lightweight technique that updates only a small subset of model weights. Common for individuals and small teams.">?</i></div>
+          <div class="op-controls">
+            <input type="range" min="0" max="10" value="0" step="1">
+            <span class="qty">0 runs / yr</span>
+          </div>
+          <div class="op-desc">Lightweight; common for individuals and small teams.</div>
+          <div class="op-eg">Examples: a chatbot tuned on your support tickets; a writing assistant in your brand voice. (Technical: LoRA fine-tune, ~7B-parameter base model.)</div>
+        </div>
+
+        <div class="op" data-op="finetuneFull">
+          <div class="op-title">Customize an AI on your data — large scale</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="5" value="0" step="1">
+            <span class="qty">0 runs / yr</span>
+          </div>
+          <div class="op-desc">A bigger version of the above on a more capable AI.</div>
+          <div class="op-eg">Examples: a hospital training a specialized clinical assistant; a law firm tuning a contract reviewer. (Technical: full fine-tune of a ~70B-parameter base model.)</div>
+        </div>
+      </div>
+
+      <div class="op-group">
+        <div class="op-group-title">Building an AI from scratch</div>
+
+        <div class="op" data-op="pretrainSmall">
+          <div class="op-title">Build a small specialized AI</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="5" value="0" step="1">
+            <span class="qty">0 runs / yr</span>
+          </div>
+          <div class="op-desc">Training a small AI from zero. Common in academic research and narrow industry tools.</div>
+          <div class="op-eg">Example: the kind of model Google uses behind search ranking. (Technical: BERT-base, ~110M parameters.)</div>
+        </div>
+
+        <div class="op" data-op="pretrainGPT3">
+          <div class="op-title">Build a ChatGPT-class AI</div>
+          <div class="op-controls">
+            <input type="range" min="0" max="5" value="0" step="1">
+            <span class="qty">0 runs / yr</span>
+          </div>
+          <div class="op-desc">Training the kind of large language model that powered the original ChatGPT. A major corporate effort — months on thousands of GPUs.</div>
+          <div class="op-eg">Example: the original GPT-3 (175 billion parameters).</div>
+        </div>
+
+        <div class="op" data-op="pretrainFrontier">
+          <div class="op-title">Build a leading-edge "frontier" AI<i class="tip" tabindex="0" data-tip="A 'frontier model' is one of the largest and most capable AIs being trained, often pushing the limits of what's been built before. Training one costs tens of millions of dollars and runs for months on tens of thousands of GPUs.">?</i></div>
+          <div class="op-controls">
+            <input type="range" min="0" max="5" value="0" step="1">
+            <span class="qty">0 runs / yr</span>
+          </div>
+          <div class="op-desc">Done only by major AI labs.</div>
+          <div class="op-eg">Examples: GPT-4, Claude Opus, Gemini Ultra-class models.</div>
+        </div>
+      </div>
+
+      <div class="note" id="freqNote">All per-query sliders apply at the chosen <strong>frequency</strong> (top right) and are annualized for comparison. Training items are counted as discrete runs.</div>
+    </div>
+
+    <div class="card">
+      <h2 id="footprintHeading">Estimated annual footprint</h2>
+
+      <div class="results">
+        <div class="metric"><div class="label">Energy</div><div class="value"><span id="vE">0</span><span class="unit" id="uE">kWh</span></div></div>
+        <div class="metric"><div class="label">CO₂e</div><div class="value"><span id="vC">0</span><span class="unit" id="uC">kg</span></div></div>
+        <div class="metric"><div class="label">Water</div><div class="value"><span id="vW">0</span><span class="unit" id="uW">L</span></div></div>
+      </div>
+
+      <h2 style="margin-top:12px;" id="chartHeading">Comparison (annualized energy)</h2>
+      <div class="chart-wrap"><canvas id="chart" aria-label="Energy comparison chart"></canvas></div>
+      <div class="legend-icons">
+        <span><span class="swatch" style="background:#6aa84f"></span> Chat / search</span>
+        <span><span class="swatch" style="background:#e69138"></span> Image / video</span>
+        <span><span class="swatch" style="background:#1f78b4"></span> Agent</span>
+        <span><span class="swatch" style="background:#674ea7"></span> Customize</span>
+        <span><span class="swatch" style="background:#cc4125"></span> Build from scratch</span>
+      </div>
+
+      <div class="simple-block">
+        <div class="equiv">
+          <strong>In everyday terms — your selections are roughly equivalent to:</strong>
+          <ul id="equivList"></ul>
+        </div>
+      </div>
+
+      <div class="detail-block">
+        <h2 style="margin-top:12px;">Per-operation breakdown</h2>
+        <table class="bd">
+          <thead><tr><th>Operation</th><th class="num">Count</th><th class="num">kWh</th><th class="num">kg CO₂e</th><th class="num">L water</th></tr></thead>
+          <tbody id="bdBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="sources">
+    <strong>About the numbers.</strong> Estimates are mid-range public figures and should be read as order-of-magnitude — actual costs vary widely by hardware, datacenter PUE, model architecture, batch size, and grid mix.<br>
+    <span class="detail-block">
+      <strong>Inference per-query energy.</strong> Luccioni, Jernite &amp; Strubell (2024), <a href="https://arxiv.org/abs/2311.16863" target="_blank" rel="noopener">“Power Hungry Processing: ⚡ Watts ⚡ Driving the Cost of AI Deployment?”</a>; de Vries (2023), <a href="https://www.cell.com/joule/fulltext/S2542-4351(23)00365-3" target="_blank" rel="noopener">“The growing energy footprint of artificial intelligence,”</a> Joule. ~0.3 Wh per search, ~0.3–1 Wh per small-LLM reply, ~3 Wh per frontier reply, ~3 Wh per image. Video estimate (~50 Wh/sec) is a rough public extrapolation pending audited figures.<br>
+      <strong>AI agent tasks.</strong> An agent run is a chain of model calls plus tool invocations. We estimate ~10 calls per quick task (≈20 Wh) and ~100 calls per complex task (≈250 Wh), assuming a mix of small and frontier-class models. Per-task energy is highly task-dependent — published audits are scarce. See Stojkovic et al. (2024), <a href="https://arxiv.org/abs/2407.12480" target="_blank" rel="noopener">“Towards Greener LLM Serving,”</a> and Hugging Face's <a href="https://huggingface.co/blog/sasha/ai-environment-primer" target="_blank" rel="noopener">AI environmental impact primer</a> for related context.<br>
+      <strong>Training.</strong> Patterson et al. (2021), <a href="https://arxiv.org/abs/2104.10350" target="_blank" rel="noopener">“Carbon Emissions and Large Neural Network Training”</a> &amp; Patterson et al. (2022), <a href="https://arxiv.org/abs/2204.05149" target="_blank" rel="noopener">“The Carbon Footprint of Machine Learning Training Will Plateau, Then Shrink.”</a> GPT-3: ≈1,287 MWh, 552 t CO₂; BERT-base: ≈1.5 MWh. Llama 2 70B: ≈688 MWh (<a href="https://arxiv.org/abs/2307.09288" target="_blank" rel="noopener">Meta Llama 2 paper</a>). Frontier (GPT-4-class) ≈50,000 MWh per <a href="https://epoch.ai/" target="_blank" rel="noopener">Epoch AI</a> compute estimates.<br>
+      <strong>Water.</strong> Li, Yang, Islam &amp; Ren (2023), <a href="https://arxiv.org/abs/2304.03271" target="_blank" rel="noopener">“Making AI Less Thirsty: Uncovering and Addressing the Secret Water Footprint of AI Models.”</a> ~0.5 L per 20–50 GPT-3-class queries; ~700,000 L for GPT-3 training (Microsoft US data centers). Operational water scales with energy use and regional Water Usage Effectiveness.<br>
+      <strong>Grid carbon intensity (gCO₂/kWh).</strong> Countries: <a href="https://ember-energy.org/data/yearly-electricity-data/" target="_blank" rel="noopener">Ember Yearly Electricity Data 2024</a> and <a href="https://www.iea.org/data-and-statistics/data-product/electricity-information" target="_blank" rel="noopener">IEA Electricity Information 2024</a> (2023 generation averages). US states: <a href="https://www.epa.gov/egrid" target="_blank" rel="noopener">EPA eGRID 2022</a>. Canadian provinces: <a href="https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/" target="_blank" rel="noopener">Canada Energy Regulator</a> and <a href="https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/inventory.html" target="_blank" rel="noopener">National Inventory Report 2023</a>. Australian states: <a href="https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors" target="_blank" rel="noopener">DCCEEW National Greenhouse Accounts 2023</a>. China regional grids: Ministry of Ecology &amp; Environment baseline emission factors.<br>
+      <strong>Compute (data center) location.</strong> The artifact cannot directly observe which region served a given query — major consumer AI products don't expose that to end users. The presets are <em>likely served from</em> estimates based on public statements about provider infrastructure (<a href="https://aws.amazon.com/blogs/aws/aws-bedrock-anthropic-claude/" target="_blank" rel="noopener">AWS Bedrock/Anthropic</a>, <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models" target="_blank" rel="noopener">Azure OpenAI region availability</a>, <a href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations" target="_blank" rel="noopener">GCP Vertex AI regions</a>). Region-level grid intensity for cloud regions is approximated from the local state/country average. For exact figures, see cloud-provider carbon dashboards (<a href="https://aws.amazon.com/aws-cost-management/aws-customer-carbon-footprint-tool/" target="_blank" rel="noopener">AWS</a>, <a href="https://cloud.google.com/carbon-footprint" target="_blank" rel="noopener">GCP</a>, <a href="https://learn.microsoft.com/en-us/industry/sustainability/emissions-impact-dashboard" target="_blank" rel="noopener">Azure</a>) — accessible only to the account holder.<br>
+      <strong>Equivalencies.</strong> <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator" target="_blank" rel="noopener">EPA Greenhouse Gas Equivalencies Calculator</a> (gas passenger vehicle ≈ 400 g CO₂/mi; EV ≈ 85 g CO₂/mi on US grid; mature tree ≈ 21 kg CO₂/yr; average US home ≈ 10,800 kWh/yr); 9 W LED bulb; 5 Wh per smartphone charge; 77 Wh per hour of Netflix streaming (Carbon Trust 2021); Bitcoin transaction ≈ 830 kWh (Cambridge CBECI).
+    </span>
+  </div>
+
+  <div class="disclosure">
+    <h3>What this tool does and doesn't include</h3>
+    <p style="margin: 0 0 6px;"><strong>Included in the estimates:</strong></p>
+    <ul>
+      <li>Operational energy for the AI compute itself (CPU/GPU/TPU)</li>
+      <li>Datacenter cooling and overhead (typical hyperscale PUE ≈ 1.12)</li>
+      <li>Carbon based on your selected grid mix (country, sub-region, or specific cloud region)</li>
+      <li>Direct cooling water at the datacenter</li>
+    </ul>
+    <p style="margin: 8px 0 6px;"><strong>Not included (would change the picture in ways this tool doesn't model):</strong></p>
+    <ul>
+      <li><strong>Embodied carbon of hardware</strong> — manufacturing GPUs, servers, and datacenter buildings. Adds roughly 5–15% on top of operational figures.</li>
+      <li><strong>Network transit and your device</strong> — the energy from your ISP through transit providers to the datacenter, plus your laptop/phone running while you wait. Small per query, but non-zero.</li>
+      <li><strong>Training-cost amortization</strong> — for popular models like ChatGPT, training divided across billions of queries is tiny; for niche or rarely-used models, training can dominate the lifetime cost.</li>
+      <li><strong>Provider-reported sustainability claims</strong> — many cloud providers buy renewable-energy credits or offsets. This tool uses physical grid intensity, not "as-reported net-zero" figures.</li>
+      <li><strong>End-of-life e-waste</strong> — retiring GPUs every 3–5 years creates significant waste streams not captured here.</li>
+      <li><strong>Specific query characteristics</strong> — output length, context size, and reasoning depth can swing per-query energy by 10–100×. The figures here are mid-range averages.</li>
+    </ul>
+
+    <h3 style="margin-top: 14px;">Brief methodology</h3>
+    <p style="margin: 0;">
+      Energy figures come from peer-reviewed research (Luccioni et al., Patterson et al., Strubell et al., de Vries),
+      published provider model cards (Meta Llama, Mistral, Anthropic, Google), and Hugging Face's <a href="https://huggingface.co/AIEnergyScore" target="_blank" rel="noopener">AI Energy Score</a> benchmarks. For each operation, a single mid-range per-instance value is used; the optional model picker on chat and image rows lets you swap in a specific model's published or estimated figure.
+      <br><br>
+      Carbon = energy × grid carbon intensity (gCO₂/kWh).
+      Grid intensities are 2022–2023 generation averages: countries from Ember Yearly Electricity Data 2024 and IEA Electricity 2024; US states from EPA eGRID 2022; Canadian provinces from Canada Energy Regulator + National Inventory Report 2023; Australian states from DCCEEW; China regional grids from MEE baseline factors. The "Compute location" presets approximate where major US providers run inference based on public statements about their infrastructure.
+      <br><br>
+      Water is operational + electricity-related, modeled as a flat per-instance value. Site- and season-specific water variation is not modeled.
+      <br><br>
+      All numbers should be read as <em>order of magnitude</em>. They're useful for comparison ("agent vs chat reply," "Virginia vs Oregon," "10/day vs 100/day") but not for compliance reporting.
+    </p>
+  </div>
+
+  <div class="footer-meta">
+    Power grid data current as of November 2024. Grid intensities update annually as new EPA / Ember / CER datasets release. Inference figures will evolve as providers publish more transparent reporting.
+    <br>
+    Built as an estimation tool and not for compliance reporting or contractual carbon accounting.
+  </div>
+
+  <div class="attribution">
+    Built by Opus 4.7 with direction from <strong>Drew Wheadon</strong>.<br>
+    Source, corrections, and feedback welcome at <a href="https://github.com/drewwheadon-hub" target="_blank" rel="noopener">github.com/drewwheadon-hub</a>.
+  </div>
+</div>
+
+<script>
+// ---------- Reference data ----------
+// Per-operation cost (energy in kWh; water in liters at "average" datacenter).
+// Water uses on-site + offsite electricity-related water roughly combined.
+const OPS = {
+  search:           { label: "AI-powered web search",            cat: "inference",  kWh: 0.0003,   waterL: 0.0005, period: "day", qtyUnit: "queries" },
+  chatSmall:        { label: "Quick AI question",                cat: "inference",  kWh: 0.0005,   waterL: 0.001,  period: "day", qtyUnit: "replies" },
+  chatLarge:        { label: "Detailed AI answer",               cat: "inference",  kWh: 0.003,    waterL: 0.025,  period: "day", qtyUnit: "replies" },
+  ragQuery:         { label: "RAG-augmented AI answer",          cat: "inference",  kWh: 0.0035,   waterL: 0.030,  period: "day", qtyUnit: "queries" },
+  codeCompletion:   { label: "Code suggestion",                  cat: "inference",  kWh: 0.00005,  waterL: 0.0003, period: "day", qtyUnit: "suggestions" },
+  embedding:        { label: "Embedding / semantic search",      cat: "inference",  kWh: 0.00001,  waterL: 0.00005,period: "day", qtyUnit: "queries" },
+  voiceAudio:       { label: "AI voice / audio (per min)",        cat: "inference",  kWh: 0.0008,   waterL: 0.004,  period: "day", qtyUnit: "min" },
+  image:            { label: "AI image",                          cat: "generation", kWh: 0.003,    waterL: 0.015,  period: "day", qtyUnit: "images" },
+  video:            { label: "AI video (per sec)",                cat: "generation", kWh: 0.050,    waterL: 0.25,   period: "day", qtyUnit: "sec" },
+  agentSimple:      { label: "AI agent (quick task)",             cat: "agent",      kWh: 0.020,    waterL: 0.10,   period: "day", qtyUnit: "tasks" },
+  agentComplex:     { label: "AI agent (complex task)",           cat: "agent",      kWh: 0.250,    waterL: 1.50,   period: "day", qtyUnit: "tasks" },
+  finetuneLora:     { label: "Customize AI — small scale",        cat: "finetune",   kWh: 25,       waterL: 60,     period: "year", qtyUnit: "runs" },
+  finetuneFull:     { label: "Customize AI — large scale",        cat: "finetune",   kWh: 4000,     waterL: 10000,  period: "year", qtyUnit: "runs" },
+  pretrainSmall:    { label: "Build a small specialized AI",      cat: "pretrain",   kWh: 1500,     waterL: 3500,   period: "year", qtyUnit: "runs" },
+  pretrainGPT3:     { label: "Build a ChatGPT-class AI",          cat: "pretrain",   kWh: 1287000,  waterL: 700000, period: "year", qtyUnit: "runs" },
+  pretrainFrontier: { label: "Build a frontier AI",                cat: "pretrain",   kWh: 50000000, waterL: 25000000, period: "year", qtyUnit: "runs" },
+};
+
+// Specific named models with per-instance kWh and waterL. Empty id = "use OPS default."
+// Numbers are mid-range public estimates synthesized from provider model cards, the
+// Luccioni "Power Hungry Processing" benchmarks, and Hugging Face's AI Energy Score.
+// They are NOT vendor-confirmed for every model.
+const MODELS = {
+  chatSmall: [
+    { id: "",            name: "Generic small model (default)",  kWh: 0.0005,  waterL: 0.001 },
+    { id: "haiku",       name: "Claude Haiku",                    kWh: 0.0004,  waterL: 0.0008 },
+    { id: "gpt4omini",   name: "GPT-4o mini",                     kWh: 0.0003,  waterL: 0.0006 },
+    { id: "geminiflash", name: "Gemini 2.0 Flash",                kWh: 0.0003,  waterL: 0.0006 },
+    { id: "llama1b",     name: "Llama 3.2 1B",                    kWh: 0.00005, waterL: 0.0002 },
+    { id: "llama8b",     name: "Llama 3.1 8B",                    kWh: 0.0002,  waterL: 0.0005 },
+    { id: "mistralsmall",name: "Mistral Small",                   kWh: 0.0005,  waterL: 0.001 },
+    { id: "phi3",        name: "Phi-3 Mini",                      kWh: 0.0001,  waterL: 0.0003 },
+  ],
+  chatLarge: [
+    { id: "",            name: "Generic frontier model (default)", kWh: 0.003,  waterL: 0.025 },
+    { id: "sonnet",      name: "Claude Sonnet (3.5 / 4)",          kWh: 0.0025, waterL: 0.020 },
+    { id: "opus",        name: "Claude Opus (3 / 4)",              kWh: 0.005,  waterL: 0.040 },
+    { id: "gpt4o",       name: "GPT-4o",                            kWh: 0.003,  waterL: 0.025 },
+    { id: "gpt4turbo",   name: "GPT-4 Turbo",                       kWh: 0.005,  waterL: 0.040 },
+    { id: "gpt5",        name: "GPT-5 (estimated)",                 kWh: 0.008,  waterL: 0.060 },
+    { id: "geminipro",   name: "Gemini 2.0 Pro / Ultra",            kWh: 0.003,  waterL: 0.025 },
+    { id: "llama405",    name: "Llama 3.1 405B",                    kWh: 0.008,  waterL: 0.060 },
+    { id: "mistrallarge",name: "Mistral Large",                     kWh: 0.0035, waterL: 0.030 },
+    { id: "deepseekv3",  name: "DeepSeek V3 (MoE)",                 kWh: 0.0015, waterL: 0.015 },
+    { id: "o1",          name: "OpenAI o1 / reasoning models",      kWh: 0.025,  waterL: 0.20 },
+  ],
+  image: [
+    { id: "",            name: "Generic AI image (default)",        kWh: 0.003,  waterL: 0.015 },
+    { id: "dalle3",      name: "DALL·E 3",                          kWh: 0.003,  waterL: 0.015 },
+    { id: "midjourney",  name: "Midjourney v6",                     kWh: 0.004,  waterL: 0.020 },
+    { id: "sdxl",        name: "Stable Diffusion XL",               kWh: 0.0015, waterL: 0.008 },
+    { id: "sd3",         name: "Stable Diffusion 3",                kWh: 0.003,  waterL: 0.015 },
+    { id: "flux",        name: "FLUX.1 [dev]",                      kWh: 0.002,  waterL: 0.010 },
+    { id: "firefly",     name: "Adobe Firefly",                     kWh: 0.003,  waterL: 0.015 },
+  ],
+};
+const CAT_COLOR = { inference: "#6aa84f", generation: "#e69138", agent: "#1f78b4", finetune: "#674ea7", pretrain: "#cc4125" };
+
+// Grid carbon intensity (gCO2/kWh), 2023 generation averages.
+const GRID = [
+  ["IS", "Iceland",          28],
+  ["NO", "Norway",            30],
+  ["SE", "Sweden",            41],
+  ["FR", "France",            56],
+  ["CH", "Switzerland",       47],
+  ["BR", "Brazil",            95],
+  ["CO", "Colombia",         160],
+  ["CA", "Canada",           130],
+  ["NZ", "New Zealand",      120],
+  ["FI", "Finland",          110],
+  ["DK", "Denmark",          151],
+  ["GB", "United Kingdom",   207],
+  ["ES", "Spain",            215],
+  ["PT", "Portugal",         185],
+  ["IT", "Italy",            280],
+  ["MX", "Mexico",           420],
+  ["US", "United States",    390],
+  ["KR", "South Korea",      435],
+  ["JP", "Japan",            462],
+  ["DE", "Germany",          380],
+  ["NL", "Netherlands",      355],
+  ["BE", "Belgium",          167],
+  ["IE", "Ireland",          295],
+  ["AU", "Australia",        549],
+  ["TR", "Turkey",           468],
+  ["TW", "Taiwan",           575],
+  ["CN", "China",            583],
+  ["ZA", "South Africa",     708],
+  ["IN", "India",            713],
+  ["PL", "Poland",           662],
+  ["SA", "Saudi Arabia",     540],
+  ["AE", "UAE",              498],
+  ["SG", "Singapore",        408],
+  ["WORLD", "World average", 480],
+];
+
+// Sub-national CO2 intensity (gCO2/kWh) by country.
+// Sources: USA = EPA eGRID 2022. Canada = Canada Energy Regulator / NIR 2023.
+// Australia = DCCEEW National Greenhouse Accounts 2023. China = MEE Regional Grid factors.
+const SUBREGIONS = {
+  US: {
+    label: "US state",
+    items: [
+      ["",   "All states (US average)", 390],
+      ["AK", "Alaska", 458], ["AL", "Alabama", 327], ["AR", "Arkansas", 440], ["AZ", "Arizona", 327],
+      ["CA", "California", 213], ["CO", "Colorado", 494], ["CT", "Connecticut", 240], ["DC", "District of Columbia", 263],
+      ["DE", "Delaware", 395], ["FL", "Florida", 386], ["GA", "Georgia", 308], ["HI", "Hawaii", 621],
+      ["IA", "Iowa", 345], ["ID", "Idaho", 109], ["IL", "Illinois", 263], ["IN", "Indiana", 735],
+      ["KS", "Kansas", 395], ["KY", "Kentucky", 757], ["LA", "Louisiana", 395], ["MA", "Massachusetts", 263],
+      ["MD", "Maryland", 245], ["ME", "Maine", 100], ["MI", "Michigan", 444], ["MN", "Minnesota", 331],
+      ["MO", "Missouri", 694], ["MS", "Mississippi", 349], ["MT", "Montana", 531], ["NC", "North Carolina", 299],
+      ["ND", "North Dakota", 626], ["NE", "Nebraska", 531], ["NH", "New Hampshire", 104], ["NJ", "New Jersey", 231],
+      ["NM", "New Mexico", 490], ["NV", "Nevada", 313], ["NY", "New York", 231], ["OH", "Ohio", 503],
+      ["OK", "Oklahoma", 399], ["OR", "Oregon", 109], ["PA", "Pennsylvania", 327], ["RI", "Rhode Island", 399],
+      ["SC", "South Carolina", 240], ["SD", "South Dakota", 172], ["TN", "Tennessee", 318], ["TX", "Texas", 349],
+      ["UT", "Utah", 680], ["VA", "Virginia", 304], ["VT", "Vermont", 9], ["WA", "Washington", 91],
+      ["WI", "Wisconsin", 499], ["WV", "West Virginia", 826], ["WY", "Wyoming", 839],
+    ]
+  },
+  CA: {
+    label: "Province",
+    items: [
+      ["",   "All provinces (Canada average)", 130],
+      ["AB", "Alberta", 540],
+      ["BC", "British Columbia", 11],
+      ["MB", "Manitoba", 2],
+      ["NB", "New Brunswick", 280],
+      ["NL", "Newfoundland & Labrador", 25],
+      ["NS", "Nova Scotia", 580],
+      ["NT", "Northwest Territories", 175],
+      ["NU", "Nunavut", 720],
+      ["ON", "Ontario", 25],
+      ["PE", "Prince Edward Island", 5],
+      ["QC", "Quebec", 2],
+      ["SK", "Saskatchewan", 660],
+      ["YT", "Yukon", 95],
+    ]
+  },
+  AU: {
+    label: "State/Territory",
+    items: [
+      ["",   "All states (Australia avg)", 549],
+      ["ACT", "Australian Capital Territory", 730],
+      ["NSW", "New South Wales", 730],
+      ["NT",  "Northern Territory", 540],
+      ["QLD", "Queensland", 730],
+      ["SA",  "South Australia", 240],
+      ["TAS", "Tasmania", 100],
+      ["VIC", "Victoria", 850],
+      ["WA",  "Western Australia", 510],
+    ]
+  },
+  CN: {
+    label: "Regional grid",
+    items: [
+      ["",    "All regions (China avg)", 583],
+      ["NCG", "North China Grid (Beijing, Hebei, Shandong)", 890],
+      ["NEG", "Northeast Grid (Liaoning, Jilin, Heilongjiang)", 770],
+      ["ECG", "East China Grid (Shanghai, Jiangsu, Zhejiang)", 700],
+      ["CCG", "Central Grid (Henan, Hubei, Sichuan)", 530],
+      ["NWG", "Northwest Grid (Shaanxi, Gansu, Xinjiang)", 580],
+      ["SCG", "Southern Grid (Guangdong, Yunnan)", 400],
+    ]
+  },
+};
+
+// Data center / compute-location presets (gCO2/kWh). These approximate where major
+// AI providers run inference. End users can't directly observe which region served
+// a query, so these are "likely served from" estimates based on public statements.
+const DC_PRESETS = [
+  ["",            "Use my local grid",                           null, "Apply the user-location grid above."],
+  ["us-ai-blend", "Typical US AI cluster (weighted avg)",        320,  "Rough average of the regions where Anthropic, OpenAI, and Google host most US inference."],
+  ["aws-use1",   "AWS US-East-1 — N. Virginia",                  310,  "Northern Virginia (PJM grid). Heaviest AI cluster in the world."],
+  ["aws-use2",   "AWS US-East-2 — Ohio",                         503,  "Used by AWS Bedrock for some workloads."],
+  ["aws-usw2",   "AWS US-West-2 — Oregon",                       109,  "Hydro-heavy grid; favored for sustainability."],
+  ["azure-eus",  "Azure East US — Virginia",                     310,  "Primary OpenAI inference region."],
+  ["azure-scus", "Azure South Central US — Texas",               349,  "Secondary OpenAI inference region."],
+  ["azure-wus2", "Azure West US 2 — Washington",                 91,   "Hydro-heavy."],
+  ["gcp-uc1",    "GCP us-central1 — Iowa",                       345,  "Primary Google Gemini / Vertex AI region (lots of wind)."],
+  ["gcp-ue4",    "GCP us-east4 — N. Virginia",                   310,  ""],
+  ["gcp-uw4",    "GCP us-west4 — Las Vegas, Nevada",             313,  ""],
+  ["gcp-ew4",    "GCP europe-west4 — Netherlands",               355,  ""],
+  ["gcp-an1",    "GCP asia-northeast1 — Tokyo",                  462,  ""],
+  ["anthropic",  "Anthropic Claude — estimated US blend",        225,  "Mostly AWS US-East-1 (Virginia) and US-West-2 (Oregon)."],
+  ["openai",     "OpenAI / ChatGPT — estimated US blend",        330,  "Azure East US (Virginia) + South Central US (Texas)."],
+  ["gemini",     "Google Gemini — estimated US blend",           300,  "GCP us-central1 (Iowa) + us-east4 (Virginia) + us-west4 (Nevada)."],
+];
+
+// Timezone → country code (best-effort, common cases).
+const TZ_MAP = {
+  "Europe/London":"GB","Europe/Dublin":"IE","Europe/Paris":"FR","Europe/Berlin":"DE","Europe/Madrid":"ES",
+  "Europe/Lisbon":"PT","Europe/Rome":"IT","Europe/Amsterdam":"NL","Europe/Brussels":"BE","Europe/Stockholm":"SE",
+  "Europe/Oslo":"NO","Europe/Copenhagen":"DK","Europe/Helsinki":"FI","Europe/Warsaw":"PL","Europe/Zurich":"CH",
+  "Europe/Reykjavik":"IS","Europe/Istanbul":"TR",
+  "America/New_York":"US","America/Chicago":"US","America/Denver":"US","America/Los_Angeles":"US",
+  "America/Phoenix":"US","America/Anchorage":"US","America/Detroit":"US","America/Indiana/Indianapolis":"US",
+  "America/Toronto":"CA","America/Vancouver":"CA","America/Edmonton":"CA","America/Halifax":"CA",
+  "America/Mexico_City":"MX","America/Sao_Paulo":"BR","America/Bogota":"CO",
+  "Asia/Tokyo":"JP","Asia/Seoul":"KR","Asia/Shanghai":"CN","Asia/Hong_Kong":"CN","Asia/Taipei":"TW",
+  "Asia/Singapore":"SG","Asia/Kolkata":"IN","Asia/Calcutta":"IN","Asia/Dubai":"AE","Asia/Riyadh":"SA",
+  "Australia/Sydney":"AU","Australia/Melbourne":"AU","Australia/Brisbane":"AU","Australia/Perth":"AU",
+  "Pacific/Auckland":"NZ","Africa/Johannesburg":"ZA"
+};
+
+// Timezones that pin down a single sub-region with reasonable confidence.
+// Keyed by country code → { timezone: subregion-code }.
+// Multi-region timezones (America/New_York, Chicago, Denver, etc.) are absent on purpose.
+const TZ_SUBREGION = {
+  US: {
+    "America/Los_Angeles": "CA",
+    "America/Phoenix":     "AZ",
+    "America/Anchorage":   "AK", "America/Juneau": "AK", "America/Nome": "AK", "America/Sitka": "AK", "America/Adak": "AK",
+    "Pacific/Honolulu":    "HI", "America/Honolulu": "HI",
+    "America/Detroit":     "MI",
+    "America/Indiana/Indianapolis": "IN", "America/Indiana/Knox": "IN", "America/Indiana/Marengo": "IN",
+    "America/Indiana/Petersburg": "IN", "America/Indiana/Tell_City": "IN", "America/Indiana/Vevay": "IN",
+    "America/Indiana/Vincennes": "IN", "America/Indiana/Winamac": "IN",
+    "America/Kentucky/Louisville": "KY", "America/Kentucky/Monticello": "KY",
+  },
+  CA: {
+    "America/Toronto":   "ON",
+    "America/Vancouver": "BC",
+    "America/Edmonton":  "AB",
+    "America/Halifax":   "NS",
+    "America/Winnipeg":  "MB",
+    "America/Regina":    "SK", "America/Swift_Current": "SK",
+    "America/St_Johns":  "NL",
+    "America/Moncton":   "NB",
+    "America/Whitehorse":"YT",
+    "America/Yellowknife":"NT",
+    "America/Iqaluit":   "NU", "America/Rankin_Inlet": "NU", "America/Resolute": "NU",
+  },
+  AU: {
+    "Australia/Sydney":    "NSW",
+    "Australia/Melbourne": "VIC",
+    "Australia/Brisbane":  "QLD",
+    "Australia/Perth":     "WA",
+    "Australia/Adelaide":  "SA",
+    "Australia/Hobart":    "TAS",
+    "Australia/Darwin":    "NT",
+  },
+  // China timezones (Asia/Shanghai etc.) cover too much to pin a grid — left blank.
+};
+
+// PUE (Power Usage Effectiveness) — applied to compute electricity from server-only energy.
+// Modern hyperscale datacenters average ~1.12; we assume our base numbers already include PUE,
+// so this is a no-op multiplier exposed for the curious in detailed view.
+const PUE = 1.12;
+
+// ---------- State ----------
+let region = "WORLD";
+let detectedRegion = null;
+let subregion = "";        // sub-national region code (state/province/grid); "" = country-wide avg
+let dcLocation = "";       // data center preset key; "" = use my local grid
+let customCi = null;
+let chart = null;
+let freq = "day"; // day | week | month | year | once
+let modelChoices = {};     // op key -> selected model id; "" or missing = use OPS default
+
+// Resolve effective per-instance energy/water — model override if chosen, else OPS default.
+function opKwh(op) {
+  const choice = modelChoices[op];
+  if (choice && MODELS[op]) {
+    const m = MODELS[op].find(x => x.id === choice);
+    if (m) return m.kWh;
+  }
+  return OPS[op].kWh;
+}
+function opWaterL(op) {
+  const choice = modelChoices[op];
+  if (choice && MODELS[op]) {
+    const m = MODELS[op].find(x => x.id === choice);
+    if (m) return m.waterL;
+  }
+  return OPS[op].waterL;
+}
+
+// Frequency configuration. `unit` is the time suffix for per-query items;
+// `runUnit` is the time suffix for training items (always /yr unless one-time).
+const FREQ = {
+  day:   { mult: 365, unit: "/ day",      runUnit: "/ yr",        heading: "Estimated annual footprint",        chartTitle: "Comparison (annualized energy)", note: "Per-query sliders are entered <strong>per day</strong> and annualized (×365). Training items are counted as runs per year." },
+  week:  { mult: 52,  unit: "/ week",     runUnit: "/ yr",        heading: "Estimated annual footprint",        chartTitle: "Comparison (annualized energy)", note: "Per-query sliders are entered <strong>per week</strong> and annualized (×52). Training items are counted as runs per year." },
+  month: { mult: 12,  unit: "/ month",    runUnit: "/ yr",        heading: "Estimated annual footprint",        chartTitle: "Comparison (annualized energy)", note: "Per-query sliders are entered <strong>per month</strong> and annualized (×12). Training items are counted as runs per year." },
+  year:  { mult: 1,   unit: "/ yr",       runUnit: "/ yr",        heading: "Estimated annual footprint",        chartTitle: "Comparison (annual energy)",     note: "Per-query sliders are entered <strong>per year</strong>. Training items are counted as runs per year." },
+  once:  { mult: 1,   unit: "(one-time)", runUnit: "(one-time)",  heading: "Estimated footprint (one-time event)", chartTitle: "Comparison (energy)",            note: "All sliders are counted as a single <strong>one-time event</strong> — no annualization." },
+};
+
+// ---------- Init UI ----------
+function populateRegions() {
+  const sel = document.getElementById("region");
+  // de-dupe by code
+  const seen = new Set();
+  for (const [code, name, ci] of GRID) {
+    if (seen.has(code)) continue;
+    seen.add(code);
+    const opt = document.createElement("option");
+    opt.value = code; opt.textContent = `${name} (${ci} g/kWh)`;
+    sel.appendChild(opt);
+  }
+}
+function populateSubregions(country) {
+  const sel = document.getElementById("subregion");
+  sel.innerHTML = "";
+  const cfg = SUBREGIONS[country];
+  if (!cfg) return;
+  for (const [code, name, ci] of cfg.items) {
+    const opt = document.createElement("option");
+    opt.value = code;
+    opt.textContent = `${name} (${ci} g/kWh)`;
+    sel.appendChild(opt);
+  }
+}
+function populateDcLocations() {
+  const sel = document.getElementById("dcLocation");
+  for (const [code, label, ci] of DC_PRESETS) {
+    const opt = document.createElement("option");
+    opt.value = code;
+    opt.textContent = ci == null ? label : `${label} (${ci} g/kWh)`;
+    sel.appendChild(opt);
+  }
+}
+function updateSubregionVisibility() {
+  const cfg = SUBREGIONS[region];
+  const wrap = document.getElementById("subregionLabel");
+  if (cfg) {
+    wrap.style.display = "";
+    document.getElementById("subregionLabelText").textContent = cfg.label;
+  } else {
+    wrap.style.display = "none";
+  }
+}
+function subregionCi() {
+  const cfg = SUBREGIONS[region];
+  if (!cfg) return null;
+  const entry = cfg.items.find(s => s[0] === subregion) || cfg.items[0];
+  return entry[2];
+}
+function subregionName() {
+  const cfg = SUBREGIONS[region];
+  if (!cfg) return null;
+  const entry = cfg.items.find(s => s[0] === subregion);
+  return entry ? entry[1] : null;
+}
+function dcPreset() {
+  return DC_PRESETS.find(d => d[0] === dcLocation) || DC_PRESETS[0];
+}
+function detect() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const code = TZ_MAP[tz];
+    if (code) {
+      detectedRegion = code;
+      region = code;
+      document.getElementById("region").value = code;
+      // If the detected country has a sub-region map, populate it and try to pin.
+      if (SUBREGIONS[code]) {
+        populateSubregions(code);
+        const pin = (TZ_SUBREGION[code] || {})[tz] || "";
+        subregion = pin;
+        document.getElementById("subregion").value = pin;
+      }
+      updateSubregionVisibility();
+      refreshLocLabel(true);
+      return;
+    }
+  } catch (e) {}
+  document.getElementById("locLabel").textContent = "Couldn't auto-detect — pick a region";
+  document.getElementById("dot").style.background = "#e69138";
+}
+function refreshLocLabel(detectedFlag) {
+  const prefix = detectedFlag && region === detectedRegion ? "Detected: " : "Region: ";
+  const countryEntry = GRID.find(g => g[0] === region) || GRID.find(g => g[0] === "WORLD");
+  let userText, userCi;
+  const subName = subregionName();
+  if (subName) {
+    userCi = subregionCi();
+    userText = `${subName}, ${countryEntry[1]} · ${userCi} gCO₂/kWh`;
+  } else {
+    userCi = countryEntry[2];
+    userText = `${countryEntry[1]} · ${userCi} gCO₂/kWh`;
+    if (SUBREGIONS[region]) userText += ` — pick a ${SUBREGIONS[region].label} above for finer detail`;
+  }
+  // If a data center preset is active, surface that too.
+  const dc = dcPreset();
+  let text = prefix + userText;
+  if (dc[2] != null) {
+    text += `  →  compute on ${dc[1]} (${dc[2]} gCO₂/kWh)`;
+  }
+  document.getElementById("locLabel").textContent = text;
+}
+function currentCi() {
+  if (customCi != null && !Number.isNaN(customCi)) return customCi;
+  const dc = dcPreset();
+  if (dc[2] != null) return dc[2];  // data center override
+  const sCi = subregionCi();
+  if (sCi != null && subregion) return sCi;
+  const entry = GRID.find(g => g[0] === region) || GRID.find(g => g[0] === "WORLD");
+  return entry[2];
+}
+
+// ---------- Per-operation decoration ----------
+function decorateOps() {
+  document.querySelectorAll(".op").forEach(opDiv => {
+    const op = opDiv.dataset.op;
+    if (!op || !OPS[op]) return;
+    const controls = opDiv.querySelector(".op-controls");
+    const slider   = controls.querySelector("input[type=range]");
+    const qty      = controls.querySelector(".qty");
+
+    // "0" quick-clear button
+    const btnZero = document.createElement("button");
+    btnZero.type = "button";
+    btnZero.className = "quickset";
+    btnZero.textContent = "0";
+    btnZero.title = "Clear";
+    btnZero.addEventListener("click", () => {
+      slider.value = "0";
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    controls.insertBefore(btnZero, qty);
+
+    // Model picker (only for ops that have model variants)
+    if (MODELS[op]) {
+      const wrap = document.createElement("div");
+      wrap.className = "op-model";
+      wrap.innerHTML = `<label>Model: <select data-model-for="${op}"></select></label>`;
+      opDiv.appendChild(wrap);
+      const sel = wrap.querySelector("select");
+      MODELS[op].forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.name;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", (e) => {
+        modelChoices[op] = e.target.value;
+        recompute();
+      });
+    }
+
+    // Per-instance footprint hint line
+    const hint = document.createElement("div");
+    hint.className = "op-per";
+    hint.dataset.opPer = op;
+    opDiv.appendChild(hint);
+  });
+}
+function updatePerInstance() {
+  const ci = currentCi();
+  for (const op in OPS) {
+    const el = document.querySelector(`[data-op-per="${op}"]`);
+    if (!el) continue;
+    const meta = OPS[op];
+    const kwh = opKwh(op);
+    const co2 = (kwh * ci) / 1000;  // kg
+    const water = opWaterL(op);
+    el.innerHTML =
+      `<strong>One ${meta.label} ≈</strong> ` +
+      `${format(kwh, "kWh").join(" ")} &nbsp;·&nbsp; ` +
+      `${format(co2, "kg").join(" ")} &nbsp;·&nbsp; ` +
+      `${format(water, "L").join(" ")}`;
+  }
+}
+
+// ---------- Compute ----------
+function readSliders() {
+  const out = {};
+  document.querySelectorAll(".op").forEach(el => {
+    const op = el.dataset.op;
+    const val = parseInt(el.querySelector("input[type=range]").value, 10);
+    out[op] = val;
+  });
+  return out;
+}
+function scaleQty(op, qty) {
+  const meta = OPS[op];
+  // per-query items scale by the user-selected frequency multiplier;
+  // training "runs" are always counted as-is.
+  return meta.period === "day" ? qty * FREQ[freq].mult : qty;
+}
+function format(num, unit) {
+  // Choose nice unit; preserve precision for small values so we don't render "0".
+  if (unit === "kWh") {
+    if (num >= 1e6) return [(num/1e6).toFixed(2), "GWh"];
+    if (num >= 1e3) return [(num/1e3).toFixed(2), "MWh"];
+    if (num >= 1)   return [num.toFixed(2), "kWh"];
+    const wh = num * 1000;
+    if (wh >= 10) return [wh.toFixed(1), "Wh"];
+    if (wh >= 1)  return [wh.toFixed(2), "Wh"];
+    return [wh.toFixed(3), "Wh"];
+  }
+  if (unit === "kg") {
+    if (num >= 1e6) return [(num/1e6).toFixed(2), "kt CO₂e"];
+    if (num >= 1e3) return [(num/1e3).toFixed(2), "t CO₂e"];
+    if (num >= 0.1) return [num.toFixed(2), "kg CO₂e"];
+    const g = num * 1000;
+    if (g >= 10) return [g.toFixed(0), "g CO₂e"];
+    if (g >= 1)  return [g.toFixed(1), "g CO₂e"];
+    if (g >= 0.1)return [g.toFixed(2), "g CO₂e"];
+    return [g.toFixed(3), "g CO₂e"];
+  }
+  if (unit === "L") {
+    if (num >= 1e6) return [(num/1e6).toFixed(2), "ML"];
+    if (num >= 1e3) return [(num/1e3).toFixed(2), "kL"];
+    if (num >= 1)   return [num.toFixed(1), "L"];
+    const ml = num * 1000;
+    if (ml >= 10) return [ml.toFixed(0), "mL"];
+    if (ml >= 1)  return [ml.toFixed(1), "mL"];
+    return [ml.toFixed(2), "mL"];
+  }
+  return [num.toString(), unit];
+}
+
+function applyFreqCopy() {
+  document.getElementById("footprintHeading").textContent = FREQ[freq].heading;
+  document.getElementById("chartHeading").textContent     = FREQ[freq].chartTitle;
+  document.getElementById("freqNote").innerHTML           = FREQ[freq].note;
+  // also update Chart axis label on next render via recompute()
+}
+
+function recompute() {
+  updatePerInstance();
+  syncUrl();
+  const counts = readSliders();
+  const ci = currentCi(); // gCO2/kWh
+  let totalKwh = 0, totalCO2g = 0, totalWater = 0;
+  const rows = [];
+
+  for (const op in counts) {
+    const meta = OPS[op];
+    const scaledQty = scaleQty(op, counts[op]);
+    const kwh = scaledQty * opKwh(op);
+    const co2g = kwh * ci;
+    const water = scaledQty * opWaterL(op);
+    totalKwh += kwh;
+    totalCO2g += co2g;
+    totalWater += water;
+    rows.push({ op, label: meta.label, cat: meta.cat, count: scaledQty, kwh, co2: co2g/1000, water });
+    // update slider label using selected frequency + operation-specific unit
+    const el = document.querySelector(`.op[data-op="${op}"] .qty`);
+    if (el) {
+      const suffix = meta.period === "day" ? FREQ[freq].unit : FREQ[freq].runUnit;
+      const unit = meta.qtyUnit ? " " + meta.qtyUnit : "";
+      el.textContent = `${counts[op]}${unit} ${suffix}`;
+    }
+  }
+
+  // headline metrics
+  const [ev, eu] = format(totalKwh, "kWh");
+  const [cv, cu] = format(totalCO2g/1000, "kg");
+  const [wv, wu] = format(totalWater, "L");
+  document.getElementById("vE").textContent = ev; document.getElementById("uE").textContent = " " + eu;
+  document.getElementById("vC").textContent = cv; document.getElementById("uC").textContent = " " + cu;
+  document.getElementById("vW").textContent = wv; document.getElementById("uW").textContent = " " + wu;
+
+  // equivalencies
+  // Reference values:
+  //  - LED bulb 9W -> hours = Wh/9
+  //  - US passenger vehicle: 400 g CO2 / mile (EPA)
+  //  - Tree (urban): absorbs ~21 kg CO2 / year
+  //  - Average US home electricity: ~10,800 kWh/yr (EIA)
+  //  - Shower: ~65 L of water
+  //  - Bathtub: ~150 L
+  const ul = document.getElementById("equivList");
+  ul.innerHTML = "";
+  const bulbHrs       = (totalKwh * 1000) / 9;        // 9 W LED bulb
+  const smartphoneChg = (totalKwh * 1000) / 5;        // ~5 Wh per full charge
+  const netflixHrs    = totalKwh / 0.077;             // ~77 Wh per hour streaming
+  const miles         = (totalCO2g) / 400;            // 400 g CO2 per mile (avg US gas car, EPA)
+  const trees         = (totalCO2g/1000) / 21;        // 21 kg CO2 / yr per mature tree
+  const homes         = totalKwh / 10800;             // 10,800 kWh / yr per US home (EIA)
+  const showers       = totalWater / 65;              // 65 L per shower
+  const bitcoinTxs    = totalKwh / 830;               // ~830 kWh per BTC transaction (Cambridge CBECI)
+  function row(text) { const li = document.createElement("li"); li.innerHTML = text; ul.appendChild(li); }
+  function fmtNum(n, max) { return n.toLocaleString(undefined, { maximumFractionDigits: max }); }
+  function pick(n) { return n < 1 ? 2 : (n < 10 ? 1 : 0); }
+  // Energy anchors
+  if (bulbHrs >= 0.01) {
+    if (bulbHrs >= 1e6) {
+      row(`<strong>${fmtNum(bulbHrs/8760, 0)} LED bulbs</strong> left on for a year`);
+    } else {
+      row(`<strong>${fmtNum(bulbHrs, pick(bulbHrs))} hours</strong> of running a 9 W LED bulb`);
+    }
+  }
+  if (smartphoneChg >= 0.1) {
+    row(`<strong>${fmtNum(smartphoneChg, pick(smartphoneChg))} full smartphone charges</strong>`);
+  }
+  if (netflixHrs >= 0.05) {
+    row(`<strong>${fmtNum(netflixHrs, pick(netflixHrs))} hours</strong> of streaming Netflix`);
+  }
+  if (homes >= 0.0005) {
+    const decimals = homes < 0.01 ? 4 : (homes < 1 ? 2 : 1);
+    row(`Electricity for <strong>${fmtNum(homes, decimals)} average US homes</strong> for a year`);
+  }
+  // Carbon anchors
+  if (miles >= 0.01) {
+    row(`Driving a gas car <strong>${fmtNum(miles, pick(miles))} miles</strong> (${fmtNum(miles*1.609, pick(miles))} km)`);
+  }
+  if (trees >= 0.001) {
+    const decimals = trees < 0.1 ? 3 : (trees < 10 ? 1 : 0);
+    row(`A year of CO₂ absorbed by <strong>${fmtNum(trees, decimals)} mature trees</strong>`);
+  }
+  // Water anchor
+  if (showers >= 0.1) {
+    row(`<strong>${fmtNum(showers, pick(showers))} showers</strong> of water (≈65 L each)`);
+  }
+  // Eye-opener — Bitcoin (only show when meaningful)
+  if (bitcoinTxs >= 0.001) {
+    const decimals = bitcoinTxs < 0.1 ? 3 : (bitcoinTxs < 10 ? 2 : 0);
+    row(`<strong>${fmtNum(bitcoinTxs, decimals)} Bitcoin transactions</strong> (~830 kWh each)`);
+  }
+  if (ul.children.length === 0) row(`Move a slider to see what your use adds up to.`);
+
+  // detailed breakdown
+  const tbody = document.getElementById("bdBody");
+  tbody.innerHTML = "";
+  rows.sort((a,b) => b.kwh - a.kwh).forEach(r => {
+    if (r.count === 0) return;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="swatch" style="background:${CAT_COLOR[r.cat]};margin-right:6px;"></span>${r.label}</td>
+      <td class="num">${r.count.toLocaleString()}</td>
+      <td class="num">${format(r.kwh,"kWh").join(" ")}</td>
+      <td class="num">${format(r.co2,"kg").join(" ")}</td>
+      <td class="num">${format(r.water,"L").join(" ")}</td>`;
+    tbody.appendChild(tr);
+  });
+  if (tbody.children.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:#999;padding:8px 0;">No selections yet.</td></tr>';
+  }
+
+  // chart
+  renderChart(rows);
+}
+
+function renderChart(rows) {
+  const active = rows.filter(r => r.count > 0).sort((a,b) => b.kwh - a.kwh);
+  const labels = active.map(r => r.label);
+  const data = active.map(r => r.kwh);
+  const colors = active.map(r => CAT_COLOR[r.cat]);
+
+  const ctx = document.getElementById("chart");
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 4 }] },
+    options: {
+      indexAxis: "y",
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const [v,u] = format(c.parsed.x, "kWh");
+              return ` ${v} ${u}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: "logarithmic",
+          title: { display: true, text: "Energy (kWh, log scale)" },
+          ticks: {
+            callback: (v) => {
+              const [val, unit] = format(v, "kWh");
+              return `${val} ${unit}`;
+            }
+          }
+        },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+  if (active.length === 0) {
+    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+  }
+}
+
+// ---------- URL state (share-by-link) ----------
+let urlSyncTimer = null;
+function serializeState() {
+  const params = new URLSearchParams();
+  if (freq !== "day")     params.set("f", freq);
+  if (region !== "WORLD") params.set("r", region);
+  if (subregion)          params.set("s", subregion);
+  if (dcLocation)         params.set("dc", dcLocation);
+  if (customCi != null)   params.set("ci", customCi);
+  if (document.body.classList.contains("detail")) params.set("v", "d");
+  document.querySelectorAll(".op").forEach(opDiv => {
+    const op = opDiv.dataset.op;
+    if (!op) return;
+    const slider = opDiv.querySelector("input[type=range]");
+    const val = slider ? parseInt(slider.value, 10) : 0;
+    if (val > 0) params.set(op, val);
+    if (modelChoices[op]) params.set(op + "_m", modelChoices[op]);
+  });
+  return params.toString();
+}
+function syncUrl() {
+  if (urlSyncTimer) clearTimeout(urlSyncTimer);
+  urlSyncTimer = setTimeout(() => {
+    try {
+      const qs = serializeState();
+      const newUrl = window.location.pathname + (qs ? "?" + qs : "");
+      history.replaceState(null, "", newUrl);
+    } catch (e) { /* some sandboxed iframes block history API */ }
+  }, 250);
+}
+function applyUrlState() {
+  let params;
+  try { params = new URLSearchParams(window.location.search); }
+  catch (e) { return false; }
+  if (!params.toString()) return false;
+
+  if (params.has("f"))  freq = params.get("f");
+  if (params.has("r"))  region = params.get("r");
+  if (params.has("s"))  subregion = params.get("s");
+  if (params.has("dc")) dcLocation = params.get("dc");
+  if (params.has("ci")) { const v = parseFloat(params.get("ci")); if (!Number.isNaN(v)) customCi = v; }
+  if (params.get("v") === "d") {
+    document.body.classList.add("detail"); document.body.classList.remove("simple");
+    document.getElementById("mDetail").classList.add("active");
+    document.getElementById("mSimple").classList.remove("active");
+  }
+
+  // Apply to dropdowns / inputs
+  document.getElementById("region").value = region;
+  if (SUBREGIONS[region]) populateSubregions(region);
+  document.getElementById("subregion").value = subregion;
+  document.getElementById("dcLocation").value = dcLocation;
+  document.getElementById("freq").value = freq;
+  if (customCi != null) document.getElementById("customCi").value = customCi;
+  updateSubregionVisibility();
+
+  // Sliders + model choices
+  document.querySelectorAll(".op").forEach(opDiv => {
+    const op = opDiv.dataset.op;
+    if (!op) return;
+    if (params.has(op)) {
+      const slider = opDiv.querySelector("input[type=range]");
+      if (slider) slider.value = params.get(op);
+    }
+    if (params.has(op + "_m")) {
+      modelChoices[op] = params.get(op + "_m");
+      const sel = opDiv.querySelector(`[data-model-for="${op}"]`);
+      if (sel) sel.value = modelChoices[op];
+    }
+  });
+  refreshLocLabel(false);
+  return true;
+}
+
+// ---------- Wire up ----------
+function initEvents() {
+  document.querySelectorAll(".op input[type=range]").forEach(input => {
+    input.addEventListener("input", recompute);
+  });
+  document.getElementById("region").addEventListener("change", e => {
+    region = e.target.value;
+    customCi = null;
+    document.getElementById("customCi").value = "";
+    subregion = "";  // reset subregion on country change
+    if (SUBREGIONS[region]) {
+      populateSubregions(region);
+      document.getElementById("subregion").value = "";
+    }
+    updateSubregionVisibility();
+    refreshLocLabel(false);
+    recompute();
+  });
+  document.getElementById("subregion").addEventListener("change", e => {
+    subregion = e.target.value;
+    customCi = null;
+    document.getElementById("customCi").value = "";
+    refreshLocLabel(false);
+    recompute();
+  });
+  document.getElementById("dcLocation").addEventListener("change", e => {
+    dcLocation = e.target.value;
+    customCi = null;
+    document.getElementById("customCi").value = "";
+    refreshLocLabel(false);
+    recompute();
+  });
+  document.getElementById("customCi").addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    customCi = Number.isNaN(v) ? null : v;
+    if (customCi != null) {
+      document.getElementById("locLabel").textContent = `Custom override: ${customCi} gCO₂/kWh`;
+    }
+    recompute();
+  });
+  document.getElementById("mSimple").addEventListener("click", () => {
+    document.body.classList.remove("detail"); document.body.classList.add("simple");
+    document.getElementById("mSimple").classList.add("active");
+    document.getElementById("mDetail").classList.remove("active");
+  });
+  document.getElementById("mDetail").addEventListener("click", () => {
+    document.body.classList.add("detail"); document.body.classList.remove("simple");
+    document.getElementById("mDetail").classList.add("active");
+    document.getElementById("mSimple").classList.remove("active");
+  });
+  document.getElementById("freq").addEventListener("change", e => {
+    freq = e.target.value;
+    applyFreqCopy();
+    recompute();
+  });
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    // Restore every slider to its HTML defaultValue
+    document.querySelectorAll(".op input[type=range]").forEach(input => {
+      input.value = input.defaultValue;
+    });
+    // Clear model choices and reset dropdowns
+    modelChoices = {};
+    document.querySelectorAll("[data-model-for]").forEach(sel => { sel.value = ""; });
+    // Clear compute location and custom CI
+    dcLocation = "";
+    document.getElementById("dcLocation").value = "";
+    customCi = null;
+    document.getElementById("customCi").value = "";
+    // Reset frequency
+    freq = "day";
+    document.getElementById("freq").value = "day";
+    // Back to Simple mode
+    document.body.classList.remove("detail"); document.body.classList.add("simple");
+    document.getElementById("mSimple").classList.add("active");
+    document.getElementById("mDetail").classList.remove("active");
+    // Restore detected location
+    region = "WORLD"; subregion = "";
+    detect();
+    applyFreqCopy();
+    recompute();
+    // Brief visual confirmation
+    const btn = document.getElementById("resetBtn");
+    const original = btn.textContent;
+    btn.textContent = "✓ Reset";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1500);
+  });
+  document.getElementById("shareBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("shareBtn");
+    const original = btn.textContent;
+    try {
+      // Force a sync URL update first
+      try {
+        const qs = serializeState();
+        const url = window.location.pathname + (qs ? "?" + qs : "");
+        history.replaceState(null, "", url);
+      } catch (e) {}
+      await navigator.clipboard.writeText(window.location.href);
+      btn.textContent = "✓ Copied!";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1800);
+    } catch (e) {
+      // Fallback: try selecting a temp input
+      const t = document.createElement("input");
+      t.value = window.location.href;
+      document.body.appendChild(t); t.select();
+      try { document.execCommand("copy"); btn.textContent = "✓ Copied!"; btn.classList.add("copied"); }
+      catch (e2) { btn.textContent = "(Copy failed)"; }
+      document.body.removeChild(t);
+      setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1800);
+    }
+  });
+}
+
+populateRegions();
+populateDcLocations();
+decorateOps();
+// If the URL has a saved scenario, apply it. Otherwise fall back to auto-detect.
+if (!applyUrlState()) {
+  detect();
+}
+initEvents();
+applyFreqCopy();
+recompute();
+</script>
+</body>
+</html>
