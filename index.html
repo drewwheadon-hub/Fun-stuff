@@ -509,11 +509,11 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
   <div class="sources">
     <strong>About the numbers.</strong> Estimates are mid-range public figures and should be read as order-of-magnitude — actual costs vary widely by hardware, datacenter PUE, model architecture, batch size, and grid mix.<br>
     <span class="detail-block">
-      <strong>Inference per-query energy.</strong> Luccioni, Jernite &amp; Strubell (2024), <a href="https://arxiv.org/abs/2311.16863" target="_blank" rel="noopener">“Power Hungry Processing: ⚡ Watts ⚡ Driving the Cost of AI Deployment?”</a>; de Vries (2023), <a href="https://www.cell.com/joule/fulltext/S2542-4351(23)00365-3" target="_blank" rel="noopener">“The growing energy footprint of artificial intelligence,”</a> Joule. ~0.3 Wh per search, ~0.3–1 Wh per small-LLM reply, ~3 Wh per frontier reply, ~3 Wh per image. Video estimate (~50 Wh/sec) is a rough public extrapolation pending audited figures.<br>
+      <strong>Inference per-query energy.</strong> Model-picker figures for open models are measured values from Hugging Face's <a href="https://huggingface.github.io/AIEnergyScore/" target="_blank" rel="noopener">AI Energy Score</a> leaderboard (GPU energy, NVIDIA H100, refreshed Dec 2025), converted to a full-datacenter estimate (×1.5 for CPU/RAM, networking, and PUE). Proprietary-model figures are estimates anchored to those measurements and to Google's 2025 <a href="https://services.google.com/fh/files/misc/measuring_the_environmental_impact_of_delivering_ai_at_google_scale.pdf" target="_blank" rel="noopener">Gemini environmental disclosure</a> (~0.24 Wh per median text prompt). Earlier benchmarks: Luccioni, Jernite &amp; Strubell (2024), <a href="https://arxiv.org/abs/2311.16863" target="_blank" rel="noopener">“Power Hungry Processing,”</a> and de Vries (2023), <a href="https://www.cell.com/joule/fulltext/S2542-4351(23)00365-3" target="_blank" rel="noopener">Joule</a>. Video estimate (~50 Wh/sec) is a rough public extrapolation pending audited figures.<br>
       <strong>AI agent tasks.</strong> An agent run is a chain of model calls plus tool invocations. We estimate ~10 calls per quick task (≈20 Wh) and ~100 calls per complex task (≈250 Wh), assuming a mix of small and frontier-class models. Per-task energy is highly task-dependent — published audits are scarce. See Stojkovic et al. (2024), <a href="https://arxiv.org/abs/2407.12480" target="_blank" rel="noopener">“Towards Greener LLM Serving,”</a> and Hugging Face's <a href="https://huggingface.co/blog/sasha/ai-environment-primer" target="_blank" rel="noopener">AI environmental impact primer</a> for related context.<br>
       <strong>Training.</strong> Patterson et al. (2021), <a href="https://arxiv.org/abs/2104.10350" target="_blank" rel="noopener">“Carbon Emissions and Large Neural Network Training”</a> &amp; Patterson et al. (2022), <a href="https://arxiv.org/abs/2204.05149" target="_blank" rel="noopener">“The Carbon Footprint of Machine Learning Training Will Plateau, Then Shrink.”</a> GPT-3: ≈1,287 MWh, 552 t CO₂; BERT-base: ≈1.5 MWh. Llama 2 70B: ≈688 MWh (<a href="https://arxiv.org/abs/2307.09288" target="_blank" rel="noopener">Meta Llama 2 paper</a>). Frontier (GPT-4-class) ≈50,000 MWh per <a href="https://epoch.ai/" target="_blank" rel="noopener">Epoch AI</a> compute estimates.<br>
-      <strong>Water.</strong> Li, Yang, Islam &amp; Ren (2023), <a href="https://arxiv.org/abs/2304.03271" target="_blank" rel="noopener">“Making AI Less Thirsty: Uncovering and Addressing the Secret Water Footprint of AI Models.”</a> ~0.5 L per 20–50 GPT-3-class queries; ~700,000 L for GPT-3 training (Microsoft US data centers). Operational water scales with energy use and regional Water Usage Effectiveness.<br>
-      <strong>Grid carbon intensity (gCO₂/kWh).</strong> Countries: <a href="https://ember-energy.org/data/yearly-electricity-data/" target="_blank" rel="noopener">Ember Yearly Electricity Data 2024</a> and <a href="https://www.iea.org/data-and-statistics/data-product/electricity-information" target="_blank" rel="noopener">IEA Electricity Information 2024</a> (2023 generation averages). US states: <a href="https://www.epa.gov/egrid" target="_blank" rel="noopener">EPA eGRID 2022</a>. Canadian provinces: <a href="https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/" target="_blank" rel="noopener">Canada Energy Regulator</a> and <a href="https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/inventory.html" target="_blank" rel="noopener">National Inventory Report 2023</a>. Australian states: <a href="https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors" target="_blank" rel="noopener">DCCEEW National Greenhouse Accounts 2023</a>. China regional grids: Ministry of Ecology &amp; Environment baseline emission factors.<br>
+      <strong>Water.</strong> Modeled as energy × (on-site WUE + region EWIF). On-site WUE ≈ 1.5 L/kWh (hyperscale operator average; Google &amp; Microsoft 2024 sustainability reports). Off-site EWIF (Electricity Water Intensity Factor) comes from Li, Yang, Islam &amp; Ren (2025), <a href="https://dl.acm.org/doi/10.1145/3724499" target="_blank" rel="noopener">“Making AI Less Thirsty”</a> (CACM) — Table 1 publishes EWIF for 8 U.S. states (e.g., Texas 1.29, Virginia 2.39, Washington 9.50) and 9 countries (e.g., Ireland 1.48, Australia 4.26, Sweden 6.02). Values for other regions are derived from regional grid mix weighted by <a href="https://www.nrel.gov/docs/fy11osti/50900.pdf" target="_blank" rel="noopener">Macknick et al. (NREL)</a> technology water-consumption factors. U.S. national average 3.14 L/kWh; LBNL 2024 reports 4.35 L/kWh as a more recent figure.<br>
+      <strong>Grid carbon intensity (gCO₂/kWh).</strong> Countries: <a href="https://ember-energy.org/data/yearly-electricity-data/" target="_blank" rel="noopener">Ember Yearly Electricity Data 2024</a> and <a href="https://www.iea.org/data-and-statistics/data-product/electricity-information" target="_blank" rel="noopener">IEA Electricity Information 2024</a> (2023 generation averages). US states: <a href="https://www.epa.gov/egrid" target="_blank" rel="noopener">EPA eGRID 2022</a>. Canadian provinces: <a href="https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/" target="_blank" rel="noopener">Canada Energy Regulator</a> and <a href="https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/inventory.html" target="_blank" rel="noopener">National Inventory Report 2023</a>. Australian states: <a href="https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors" target="_blank" rel="noopener">DCCEEW National Greenhouse Accounts 2023</a>. China regional grids: Ministry of Ecology &amp; Environment baseline emission factors. This tool uses <em>average</em> (not marginal) emission factors — the consensus basis for carbon accounting; see <a href="https://www.electricitymaps.com/content/marginal-vs-average-real-time-decision-making" target="_blank" rel="noopener">Electricity Maps</a> and the GHG Protocol Scope 2 Guidance.<br>
       <strong>Compute (data center) location.</strong> The artifact cannot directly observe which region served a given query — major consumer AI products don't expose that to end users. The presets are <em>likely served from</em> estimates based on public statements about provider infrastructure (<a href="https://aws.amazon.com/blogs/aws/aws-bedrock-anthropic-claude/" target="_blank" rel="noopener">AWS Bedrock/Anthropic</a>, <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models" target="_blank" rel="noopener">Azure OpenAI region availability</a>, <a href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations" target="_blank" rel="noopener">GCP Vertex AI regions</a>). Region-level grid intensity for cloud regions is approximated from the local state/country average. For exact figures, see cloud-provider carbon dashboards (<a href="https://aws.amazon.com/aws-cost-management/aws-customer-carbon-footprint-tool/" target="_blank" rel="noopener">AWS</a>, <a href="https://cloud.google.com/carbon-footprint" target="_blank" rel="noopener">GCP</a>, <a href="https://learn.microsoft.com/en-us/industry/sustainability/emissions-impact-dashboard" target="_blank" rel="noopener">Azure</a>) — accessible only to the account holder.<br>
       <strong>Equivalencies.</strong> <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator" target="_blank" rel="noopener">EPA Greenhouse Gas Equivalencies Calculator</a> (gas passenger vehicle ≈ 400 g CO₂/mi; EV ≈ 85 g CO₂/mi on US grid; mature tree ≈ 21 kg CO₂/yr; average US home ≈ 10,800 kWh/yr); 9 W LED bulb; 5 Wh per smartphone charge; 77 Wh per hour of Netflix streaming (Carbon Trust 2021); Bitcoin transaction ≈ 830 kWh (Cambridge CBECI).
     </span>
@@ -527,9 +527,9 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
     <p style="margin: 0 0 6px;"><strong>Included in the estimates:</strong></p>
     <ul>
       <li>Operational energy for the AI compute itself (CPU/GPU/TPU)</li>
-      <li>Datacenter cooling and overhead (typical hyperscale PUE ≈ 1.12)</li>
+      <li>Datacenter cooling and overhead (typical hyperscale PUE ≈ 1.12<i class="tip" tabindex="0" data-tip="PUE (Power Usage Effectiveness) = total datacenter energy divided by computing energy. ~1.12 is the hyperscale average; older or smaller datacenters run 1.4–2.0. Sources: Uptime Institute 2024 Global Data Center Survey; Google and Microsoft PUE disclosures.">?</i>)</li>
       <li>Carbon based on your selected grid mix (country, sub-region, or specific cloud region)</li>
-      <li>Direct cooling water at the datacenter</li>
+      <li>Cooling water at the datacenter, plus scope-2 water used to generate the electricity<i class="tip" tabindex="0" data-tip="Water = energy × (on-site WUE + region EWIF). On-site WUE ≈ 1.5 L/kWh (hyperscale average); EWIF varies by grid — Ren et al. publish values for 8 U.S. states and 9 countries (Table 1); the rest derive from grid mix × NREL technology water-consumption factors. Sources: Ren et al. (2025), Making AI Less Thirsty; Macknick et al. (NREL); LBNL 2024 U.S. Data Center Energy Usage Report.">?</i></li>
       <li class="embodied-mode" style="display:none"><strong>Embodied energy, carbon, and water</strong> — manufacturing GPUs and servers, building the datacenter, end-of-line semiconductor fab water. Added as mid-range multipliers on top of operational: +12% energy, +15% carbon, +25% water.</li>
     </ul>
     <p style="margin: 8px 0 6px;"><strong>Not included (would change the picture in ways this tool doesn't model):</strong></p>
@@ -546,13 +546,12 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
     <p style="margin: 0;">
       <strong class="op-mode">Operational only:</strong>
       <strong class="embodied-mode" style="display:none">Operational + embodied:</strong>
-      Energy figures come from peer-reviewed research (Luccioni et al., Patterson et al., Strubell et al., de Vries),
-      published provider model cards (Meta Llama, Mistral, Anthropic, Google), and Hugging Face's <a href="https://huggingface.co/AIEnergyScore" target="_blank" rel="noopener">AI Energy Score</a> benchmarks. For each operation, a single mid-range per-instance value is used; the optional model picker on chat and image rows lets you swap in a specific model's published or estimated figure.
+      Energy figures come from peer-reviewed research (Luccioni et al., Patterson et al., de Vries), Google's 2025 Gemini disclosure, and Hugging Face's <a href="https://huggingface.github.io/AIEnergyScore/" target="_blank" rel="noopener">AI Energy Score</a><i class="tip" tabindex="0" data-tip="AI Energy Score measures GPU energy only, on a standardized 1,000-query dataset, on an NVIDIA H100. Open-model figures here are converted to a full-datacenter estimate — about ×1.5 to add CPU/RAM, networking, storage, and PUE. Source: huggingface.github.io/AIEnergyScore.">?</i> measured benchmarks. The model picker on chat and image rows lets you swap in a specific model: rows marked <strong>(measured)</strong> use AI Energy Score values for open models; rows marked <strong>(estimate)</strong> are mid-range estimates for proprietary models, which are not publicly benchmarked.
       <br><br>
-      Carbon = energy × grid carbon intensity (gCO₂/kWh).
+      Carbon = energy × <em>average</em> grid carbon intensity (gCO₂/kWh)<i class="tip" tabindex="0" data-tip="This tool uses average grid emissions, not marginal. Average factors reflect a region's actual generation mix and are the consensus basis for carbon accounting; marginal factors (the next plant to ramp up) are unsuitable for footprint reporting and are excluded by major standards. Sources: Electricity Maps; GHG Protocol Scope 2 Guidance.">?</i>.
       Grid intensities are 2022–2023 generation averages: countries from Ember Yearly Electricity Data 2024 and IEA Electricity 2024; US states from EPA eGRID 2022; Canadian provinces from Canada Energy Regulator + National Inventory Report 2023; Australian states from DCCEEW; China regional grids from MEE baseline factors. The "Compute location" presets approximate where major US providers run inference based on public statements about their infrastructure.
       <br><br>
-      Water is operational + electricity-related, modeled as a flat per-instance value. Site- and season-specific water variation is not modeled.
+      Water = energy × (on-site WUE + region EWIF). On-site WUE ≈ 1.5 L/kWh (hyperscale operator average); the Electricity Water Intensity Factor varies by location — from ~1.3 L/kWh on a gas-and-wind grid like Texas to ~9.5 L/kWh on a hydro-heavy grid like Washington (reservoir evaporation). EWIF values come from Ren et al.'s "Making AI Less Thirsty" Table 1 where directly published (eight U.S. states and nine countries plus the U.S. average), and are derived from regional grid mix × NREL technology water-consumption factors otherwise; thin-data regions fall back to the country or world average. Hour-of-day and seasonal swings in WUE are not modeled.
       <br><br>
       <span class="embodied-mode" style="display:none">
         <strong>Embodied (when scope = "+ Embodied"):</strong> applied as flat percentage multipliers on top of operational figures —
@@ -567,13 +566,13 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
   </div>
 
   <div class="footer-meta">
-    <strong>Grid data current as of November 2024.</strong> Grid intensities update annually as new EPA / Ember / CER datasets release. Inference figures will evolve as providers publish more transparent reporting.
+    <strong>Data current as of May 2026.</strong> Model energy values reflect the Hugging Face AI Energy Score leaderboard (refreshed December 2025); grid intensities are 2022–2023 averages and update as new EPA / Ember / CER datasets release.
     <br>
-    Built as an estimation tool and not for compliance reporting or contractual carbon accounting.
+    Built as an estimation tool — not for compliance reporting or contractual carbon accounting.
   </div>
 
   <div class="attribution">
-    Built with Opus 4.7 by <strong>Drew Wheadon</strong>.<br>
+    Built by Opus 4.7 with direction from <strong>Drew Wheadon</strong>.<br>
     Source, corrections, and feedback welcome at <a href="https://github.com/drewwheadon-hub" target="_blank" rel="noopener">github.com/drewwheadon-hub</a>.
   </div>
 </div>
@@ -584,13 +583,13 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
 // Water uses on-site + offsite electricity-related water roughly combined.
 const OPS = {
   search:           { label: "AI-powered web search",            cat: "inference",  kWh: 0.0003,   waterL: 0.0005, period: "day", qtyUnit: "queries" },
-  chatSmall:        { label: "Quick AI question",                cat: "inference",  kWh: 0.0005,   waterL: 0.001,  period: "day", qtyUnit: "replies" },
+  chatSmall:        { label: "Quick AI question",                cat: "inference",  kWh: 0.0001,   waterL: 0.0008, period: "day", qtyUnit: "replies" },
   chatLarge:        { label: "Detailed AI answer",               cat: "inference",  kWh: 0.003,    waterL: 0.025,  period: "day", qtyUnit: "replies" },
   ragQuery:         { label: "RAG-augmented AI answer",          cat: "inference",  kWh: 0.0035,   waterL: 0.030,  period: "day", qtyUnit: "queries" },
   codeCompletion:   { label: "Code suggestion",                  cat: "inference",  kWh: 0.00005,  waterL: 0.0003, period: "day", qtyUnit: "suggestions" },
   embedding:        { label: "Embedding / semantic search",      cat: "inference",  kWh: 0.00001,  waterL: 0.00005,period: "day", qtyUnit: "queries" },
   voiceAudio:       { label: "AI voice / audio (per min)",        cat: "inference",  kWh: 0.0008,   waterL: 0.004,  period: "day", qtyUnit: "min" },
-  image:            { label: "AI image",                          cat: "generation", kWh: 0.003,    waterL: 0.015,  period: "day", qtyUnit: "images" },
+  image:            { label: "AI image",                          cat: "generation", kWh: 0.003,    waterL: 0.025,  period: "day", qtyUnit: "images" },
   video:            { label: "AI video (per sec)",                cat: "generation", kWh: 0.050,    waterL: 0.25,   period: "day", qtyUnit: "sec" },
   agentSimple:      { label: "AI agent (quick task)",             cat: "agent",      kWh: 0.020,    waterL: 0.10,   period: "day", qtyUnit: "tasks" },
   agentComplex:     { label: "AI agent (complex task)",           cat: "agent",      kWh: 0.250,    waterL: 1.50,   period: "day", qtyUnit: "tasks" },
@@ -601,42 +600,52 @@ const OPS = {
   pretrainFrontier: { label: "Build a frontier AI",                cat: "pretrain",   kWh: 50000000, waterL: 25000000, period: "year", qtyUnit: "runs" },
 };
 
-// Specific named models with per-instance kWh and waterL. Empty id = "use OPS default."
-// Numbers are mid-range public estimates synthesized from provider model cards, the
-// Luccioni "Power Hungry Processing" benchmarks, and Hugging Face's AI Energy Score.
-// They are NOT vendor-confirmed for every model.
+// Specific named models with per-instance energy (kWh) and water (L).
+// Rows tagged "(measured)" are open models benchmarked by Hugging Face's
+// AI Energy Score (leaderboard refreshed Dec 2025): GPU energy in kWh per
+// 1,000 queries on an NVIDIA H100. Converted here to a full-datacenter,
+// per-query figure as  (AIES kWh per 1,000) / 1000 * 1.5  — the x1.5 adds
+// CPU/RAM (~+30%), networking/storage, and PUE, per the AI Energy Score
+// methodology (huggingface.github.io/AIEnergyScore).
+// Rows tagged "(estimate)" are proprietary models, which are not publicly
+// benchmarked; these are mid-range estimates anchored to the measured open
+// models and to Google's 2025 Gemini disclosure (~0.24 Wh / median text prompt).
+// Water for each row is computed at runtime as energy * (on-site WUE + region
+// EWIF) — see the EWIF tables further down — so the static waterL field is
+// informational only. Empty id = "use the OPS default for this operation."
 const MODELS = {
   chatSmall: [
-    { id: "",            name: "Generic small model (default)",  kWh: 0.0005,  waterL: 0.001 },
-    { id: "haiku",       name: "Claude Haiku",                    kWh: 0.0004,  waterL: 0.0008 },
-    { id: "gpt4omini",   name: "GPT-4o mini",                     kWh: 0.0003,  waterL: 0.0006 },
-    { id: "geminiflash", name: "Gemini 2.0 Flash",                kWh: 0.0003,  waterL: 0.0006 },
-    { id: "llama1b",     name: "Llama 3.2 1B",                    kWh: 0.00005, waterL: 0.0002 },
-    { id: "llama8b",     name: "Llama 3.1 8B",                    kWh: 0.0002,  waterL: 0.0005 },
-    { id: "mistralsmall",name: "Mistral Small",                   kWh: 0.0005,  waterL: 0.001 },
-    { id: "phi3",        name: "Phi-3 Mini",                      kWh: 0.0001,  waterL: 0.0003 },
+    { id: "",            name: "Generic small model (default)",   kWh: 0.0001,    waterL: 0.0008  },
+    { id: "haiku",       name: "Claude Haiku (estimate)",         kWh: 0.0001,    waterL: 0.0008  },
+    { id: "gpt4omini",   name: "GPT-4o mini (estimate)",          kWh: 0.00008,   waterL: 0.00066 },
+    { id: "geminiflash", name: "Gemini Flash (estimate)",         kWh: 0.00009,   waterL: 0.00075 },
+    { id: "llama8b",     name: "Llama 3.1 8B (measured)",         kWh: 0.000026,  waterL: 0.00022 },
+    { id: "mistral7b",   name: "Mistral 7B (measured)",           kWh: 0.000029,  waterL: 0.00024 },
+    { id: "gemma2b",     name: "Gemma 2 2B (measured)",           kWh: 0.000028,  waterL: 0.00023 },
+    { id: "phi4",        name: "Microsoft Phi-4 (measured)",      kWh: 0.000043,  waterL: 0.00036 },
+    { id: "smollm",      name: "SmolLM2 1.7B (measured)",         kWh: 0.000012,  waterL: 0.0001  },
   ],
   chatLarge: [
-    { id: "",            name: "Generic frontier model (default)", kWh: 0.003,  waterL: 0.025 },
-    { id: "sonnet",      name: "Claude Sonnet (3.5 / 4)",          kWh: 0.0025, waterL: 0.020 },
-    { id: "opus",        name: "Claude Opus (3 / 4)",              kWh: 0.005,  waterL: 0.040 },
-    { id: "gpt4o",       name: "GPT-4o",                            kWh: 0.003,  waterL: 0.025 },
-    { id: "gpt4turbo",   name: "GPT-4 Turbo",                       kWh: 0.005,  waterL: 0.040 },
-    { id: "gpt5",        name: "GPT-5 (estimated)",                 kWh: 0.008,  waterL: 0.060 },
-    { id: "geminipro",   name: "Gemini 2.0 Pro / Ultra",            kWh: 0.003,  waterL: 0.025 },
-    { id: "llama405",    name: "Llama 3.1 405B",                    kWh: 0.008,  waterL: 0.060 },
-    { id: "mistrallarge",name: "Mistral Large",                     kWh: 0.0035, waterL: 0.030 },
-    { id: "deepseekv3",  name: "DeepSeek V3 (MoE)",                 kWh: 0.0015, waterL: 0.015 },
-    { id: "o1",          name: "OpenAI o1 / reasoning models",      kWh: 0.025,  waterL: 0.20 },
+    { id: "",            name: "Generic frontier model (default)",     kWh: 0.003,   waterL: 0.025  },
+    { id: "sonnet",      name: "Claude Sonnet (estimate)",             kWh: 0.003,   waterL: 0.025  },
+    { id: "opus",        name: "Claude Opus (estimate)",               kWh: 0.005,   waterL: 0.042  },
+    { id: "gpt4o",       name: "GPT-4o (estimate)",                    kWh: 0.003,   waterL: 0.025  },
+    { id: "gpt5",        name: "GPT-5 (estimate)",                     kWh: 0.006,   waterL: 0.050  },
+    { id: "geminipro",   name: "Gemini 2.5 Pro (estimate)",            kWh: 0.0035,  waterL: 0.029  },
+    { id: "llama70b",    name: "Llama 3 70B (measured)",               kWh: 0.00258, waterL: 0.021  },
+    { id: "qwen72b",     name: "Qwen2.5 72B (measured)",               kWh: 0.0028,  waterL: 0.023  },
+    { id: "mixtral",     name: "Mixtral 8x7B (measured)",              kWh: 0.00092, waterL: 0.0076 },
+    { id: "gptoss120b",  name: "gpt-oss-120B reasoning (measured)",    kWh: 0.0099,  waterL: 0.082  },
   ],
   image: [
-    { id: "",            name: "Generic AI image (default)",        kWh: 0.003,  waterL: 0.015 },
-    { id: "dalle3",      name: "DALL·E 3",                          kWh: 0.003,  waterL: 0.015 },
-    { id: "midjourney",  name: "Midjourney v6",                     kWh: 0.004,  waterL: 0.020 },
-    { id: "sdxl",        name: "Stable Diffusion XL",               kWh: 0.0015, waterL: 0.008 },
-    { id: "sd3",         name: "Stable Diffusion 3",                kWh: 0.003,  waterL: 0.015 },
-    { id: "flux",        name: "FLUX.1 [dev]",                      kWh: 0.002,  waterL: 0.010 },
-    { id: "firefly",     name: "Adobe Firefly",                     kWh: 0.003,  waterL: 0.015 },
+    { id: "",            name: "Generic AI image (default)",       kWh: 0.003,   waterL: 0.025  },
+    { id: "dalle3",      name: "DALL·E 3 (estimate)",              kWh: 0.003,   waterL: 0.025  },
+    { id: "midjourney",  name: "Midjourney v6 (estimate)",         kWh: 0.0035,  waterL: 0.029  },
+    { id: "firefly",     name: "Adobe Firefly (estimate)",         kWh: 0.003,   waterL: 0.025  },
+    { id: "sdxl",        name: "Stable Diffusion XL (measured)",   kWh: 0.00246, waterL: 0.020  },
+    { id: "sdxlturbo",   name: "SDXL Turbo (measured)",            kWh: 0.00058, waterL: 0.0048 },
+    { id: "sd21",        name: "Stable Diffusion 2.1 (measured)",  kWh: 0.0008,  waterL: 0.0066 },
+    { id: "cascade",     name: "Stable Cascade (measured)",        kWh: 0.00182, waterL: 0.015  },
   ],
 };
 const CAT_COLOR = { inference: "#6aa84f", generation: "#e69138", agent: "#1f78b4", finetune: "#674ea7", pretrain: "#cc4125" };
@@ -794,6 +803,51 @@ const DC_PRESETS = [
   ["gemini",     "Google Gemini — estimated US blend",           300,  "GCP us-central1 (Iowa) + us-east4 (Virginia) + us-west4 (Nevada)."],
 ];
 
+// ----- Water modeling -----
+// On-site (scope-1) WUE applied to the AI compute (L of water per kWh of total
+// datacenter energy). ~1.5 L/kWh is a hyperscale-operator average — Google's
+// 2024 report cites ~1.0 globally, Microsoft is similar, older or hot-climate
+// sites run higher. Combined below with off-site (scope-2) electricity water.
+const ON_SITE_WUE = 1.5;
+
+// Off-site scope-2 water — the "Electricity Water Intensity Factor" (EWIF) in
+// L/kWh consumed during electricity generation, varying by regional fuel mix.
+// Direct values from Ren et al. "Making AI Less Thirsty" (CACM 2025) Table 1:
+//   AZ 4.96, GA 2.31, IL 2.23, IA 3.10, TX 1.29, VA 2.39, WA 9.50, WY 2.57;
+//   AU 4.26, DK 3.18, FI 4.54, IN 3.45, ID 2.27, IE 1.48, MX 5.30, NL 3.45, SE 6.02;
+//   plus the U.S. national average 3.14.
+// Values for other regions are derived: grid mix from EPA eGRID / IEA / Ember
+// weighted by Macknick et al. (NREL) technology-specific water consumption
+// factors. Where local data is thin, falls back to the country or world average.
+const EWIF_COUNTRY = {
+  AR: 3.5, AU: 4.26, AT: 5.0, BD: 3.0, BE: 2.5, BR: 5.0, CA: 4.0, CL: 3.0,
+  CN: 3.5, CO: 4.5, CZ: 3.0, DK: 3.18, EG: 2.5, FI: 4.54, FR: 2.5, DE: 3.0,
+  GR: 3.0, HU: 3.0, IS: 4.0, IN: 3.45, ID: 2.27, IE: 1.48, IL: 2.5, IT: 2.5,
+  JP: 2.5, KE: 4.0, MY: 3.0, MX: 5.3, MA: 3.0, NL: 3.45, NZ: 4.0, NG: 3.0,
+  NO: 6.0, PK: 3.0, PE: 4.0, PH: 3.0, PL: 3.5, PT: 3.5, RO: 3.0, RU: 3.0,
+  SA: 3.0, SG: 2.5, ZA: 3.5, KR: 2.5, ES: 2.5, SE: 6.02, CH: 5.0, TW: 3.0,
+  TH: 3.0, TR: 3.0, AE: 3.0, UA: 3.5, GB: 2.0, US: 3.14, VN: 3.5,
+  WORLD: 3.5,
+};
+const EWIF_US_STATE = {
+  AK: 3.5, AL: 2.5, AR: 3.0, AZ: 4.96, CA: 2.0, CO: 3.0, CT: 2.5, DC: 2.39,
+  DE: 2.5, FL: 2.5, GA: 2.31, HI: 2.0, IA: 3.10, ID: 5.0, IL: 2.23, IN: 3.5,
+  KS: 3.0, KY: 3.5, LA: 2.5, MA: 2.5, MD: 2.5, ME: 4.0, MI: 3.0, MN: 3.0,
+  MO: 3.5, MS: 2.5, MT: 4.0, NC: 2.5, ND: 3.5, NE: 3.0, NH: 3.0, NJ: 2.5,
+  NM: 3.0, NV: 2.0, NY: 2.5, OH: 3.0, OK: 2.0, OR: 5.0, PA: 2.5, RI: 2.0,
+  SC: 2.5, SD: 3.5, TN: 3.0, TX: 1.29, UT: 3.0, VA: 2.39, VT: 2.5, WA: 9.50,
+  WI: 3.0, WV: 3.5, WY: 2.57,
+};
+// For "Compute location" presets, the EWIF of the underlying state/region.
+const DC_EWIF = {
+  "us-ai-blend": 3.0,
+  "aws-use1": 2.39, "aws-use2": 3.0,  "aws-usw2": 5.0,
+  "azure-eus": 2.39, "azure-scus": 1.29, "azure-wus2": 9.50,
+  "gcp-uc1":   3.10, "gcp-ue4":   2.39, "gcp-uw4":    2.0,
+  "gcp-ew4":   3.45, "gcp-an1":   2.5,
+  "anthropic": 3.5,  "openai":    2.0,  "gemini":     3.5,
+};
+
 // Timezone → country code (best-effort, common cases).
 const TZ_MAP = {
   // Europe
@@ -897,13 +951,26 @@ function opKwh(op) {
   }
   return OPS[op].kWh;
 }
+// Water for one instance of `op` = energy × (on-site WUE + region EWIF).
+// Replaces the static `waterL` fields on OPS/MODELS so the water number now
+// varies by region the same way carbon does. The static fields are kept on
+// the data objects for backwards compatibility but are no longer consulted.
 function opWaterL(op) {
-  const choice = modelChoices[op];
-  if (choice && MODELS[op]) {
-    const m = MODELS[op].find(x => x.id === choice);
-    if (m) return m.waterL;
+  return opKwh(op) * (ON_SITE_WUE + currentEwif());
+}
+
+// Region-specific Electricity Water Intensity Factor (L/kWh).
+// Precedence mirrors currentCi(): compute-location override → US state →
+// country → world average. Custom-CI override does not affect water — that
+// override is a carbon-intensity hack, not a hydrology change.
+function currentEwif() {
+  const dc = dcPreset();
+  if (dc[2] != null && DC_EWIF[dc[0]] != null) return DC_EWIF[dc[0]];
+  if (subregion && region === "US" && EWIF_US_STATE[subregion] != null) {
+    return EWIF_US_STATE[subregion];
   }
-  return OPS[op].waterL;
+  if (EWIF_COUNTRY[region] != null) return EWIF_COUNTRY[region];
+  return EWIF_COUNTRY.WORLD;
 }
 
 // Frequency configuration. `unit` is the time suffix for per-query items;
@@ -1054,7 +1121,7 @@ function decorateOps() {
     if (MODELS[op]) {
       const wrap = document.createElement("div");
       wrap.className = "op-model";
-      wrap.innerHTML = `<label>Model: <select data-model-for="${op}"></select></label>`;
+      wrap.innerHTML = `<label>Model<i class="tip" tabindex="0" data-tip="Rows marked (measured) use Hugging Face AI Energy Score values — GPU energy benchmarked on a standardized 1,000-query dataset, converted to a full-datacenter estimate. Rows marked (estimate) are proprietary models, which are not publicly benchmarked.">?</i>: <select data-model-for="${op}"></select></label>`;
       opDiv.appendChild(wrap);
       const sel = wrap.querySelector("select");
       MODELS[op].forEach(m => {
@@ -1462,34 +1529,26 @@ function initEvents() {
     });
   });
   document.getElementById("resetBtn").addEventListener("click", () => {
-    // Restore every slider to its HTML defaultValue
     document.querySelectorAll(".op input[type=range]").forEach(input => {
       input.value = input.defaultValue;
     });
-    // Clear model choices and reset dropdowns
     modelChoices = {};
     document.querySelectorAll("[data-model-for]").forEach(sel => { sel.value = ""; });
-    // Clear compute location and custom CI
     dcLocation = "";
     document.getElementById("dcLocation").value = "";
     customCi = null;
     document.getElementById("customCi").value = "";
-    // Reset frequency
     freq = "day";
     document.getElementById("freq").value = "day";
-    // Back to Operational-only scope
     includeEmbodied = false;
     applyScope();
-    // Back to Simple mode
     document.body.classList.remove("detail"); document.body.classList.add("simple");
     document.getElementById("mSimple").classList.add("active");
     document.getElementById("mDetail").classList.remove("active");
-    // Restore detected location
     region = "WORLD"; subregion = "";
     detect();
     applyFreqCopy();
     recompute();
-    // Brief visual confirmation
     const btn = document.getElementById("resetBtn");
     const original = btn.textContent;
     btn.textContent = "✓ Reset";
