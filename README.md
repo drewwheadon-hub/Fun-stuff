@@ -1,10 +1,10 @@
 # AI Footprint Estimator
 
-An interactive tool to estimate the energy consumption, carbon emissions, and water usage of various AI operations — adjusted to your local electricity grid and compute location.
+An interactive tool to estimate the **energy consumption**, **carbon emissions**, and **water usage** of various AI operations — adjusted to your local electricity grid and compute location.
 
 ## Overview
 
-This tool helps you understand the environmental cost of using different AI services. Move sliders to match your actual AI usage patterns, select your region and compute location, and see estimates updated in real time for:
+This tool helps you understand the environmental cost of using different AI services. Move sliders to match your actual AI usage patterns, select your region and compute location, and see instant estimates for:
 
 - **Energy** (kWh)
 - **CO₂ emissions** (kg CO₂e)
@@ -14,152 +14,206 @@ All numbers are **order-of-magnitude estimates** useful for comparison, not for 
 
 ## Features
 
-- **Granular operation tracking**: 17 AI tasks from simple searches to frontier model training
-- **Region-aware**: Country and sub-national (state/province) electricity grid data
-- **Compute location presets**: Major cloud provider regions (AWS, Azure, GCP) plus AI-specific blends
-- **Model selection**: Choose specific AI models (Claude, GPT-4o, Llama, Mistral, Gemma, etc.) for precise estimates
-- **Multiple time scales**: Per-day, week, month, year, or one-time calculations
-- **Operational and embodied**: Toggle between operational-only or operational + embodied carbon/water
-- **Comparison views**: Simple overview with equivalencies or detailed per-operation breakdown
-- **Shareability**: Copy a link encoding your exact scenario
+- **17 everyday AI operations**: from AI web search to code completion to voice synthesis
+- **Custom AI workflows**: fine-tuning and training from scratch (LoRA, full fine-tune, GPT-3-class, frontier models)
+- **Region-aware carbon intensity**: 
+  - 60+ countries with 2023 generation averages
+  - Sub-national precision: US states, Canadian provinces, Australian states, Chinese regional grids
+- **Compute location presets**: 
+  - Major cloud providers (AWS, Azure, GCP with specific regions)
+  - AI-lab estimated blends (Anthropic, OpenAI, Google Gemini)
+  - Or use your local grid
+- **Model-specific energy**: 
+  - Open models measured on Hugging Face AI Energy Score (Dec 2025)
+  - Proprietary models with mid-range estimates
+  - Covers Claude, GPT-4o, Gemini, Llama, Mistral, Gemma, Stable Diffusion, and others
+- **Multiple time scales**: per-day, per-week, per-month, per-year, or one-time calculations
+- **Operational + Embodied toggle**: See operational-only or add manufacturing/datacenter-building impact
+- **Two view modes**: 
+  - Simple: clean layout with everyday equivalencies
+  - Detailed: full per-operation breakdown table + methodology
+- **Comparison mode**: Snapshot scenario A, edit to create B, and see side-by-side deltas
+- **Shareable links**: Encode your exact scenario (all slider values, models, region, frequency) into a URL
 - **Responsive design**: Works on desktop, tablet, and mobile
 
 ## Usage
 
-1. Open `index.html` in a web browser
-2. **Region**: Auto-detects your location; adjust if needed
-3. **Subregion**: For US, Canada, Australia, and China — select your state/province/grid for finer accuracy
-4. **Compute location**: Select where the AI compute likely runs (major cloud regions or AI-lab blends)
-5. **Frequency**: Choose how often you perform each operation (defaults to annualized)
-6. **Model picker**: For inference operations, select a specific model if available
-7. **Results**: View annual (or one-time) footprint and equivalencies; toggle between simple and detailed modes
-
-### Frequency Options
-
-- **Per day**: Annualized (×365)
-- **Per week**: Annualized (×52)
-- **Per month**: Annualized (×12)
-- **Per year**: No scaling
-- **One-time event**: Single calculation
+1. **Open** `index.html` in a modern web browser
+2. **Region**: Auto-detects via timezone; adjust as needed
+3. **Subregion** (if available): US states, Canadian provinces, Australian states, or Chinese regional grids for finer accuracy
+4. **Compute location**: Select where the AI compute likely runs (major cloud regions, AI-lab blends, or your local grid)
+5. **Frequency**: Choose annualization (per-day ×365, per-week ×52, per-month ×12, per-year, or one-time)
+6. **Model picker**: For inference operations, select a specific model for precise energy figures
+7. **Sliders**: Adjust quantities for each AI operation
+8. **Results**: View annual (or one-time) energy, CO₂, and water; toggle between simple and detailed views
+9. **Compare**: Click "📊 Compare" to freeze your current scenario and edit to see deltas
+10. **Share**: Click "🔗 Copy share link" to generate a shareable URL
 
 ## Operations Included
 
-### Everyday AI Use (17 operations)
+### Everyday AI Use (10 operations)
 
-- AI-powered web search
-- Quick AI question (small models)
-- Detailed AI answer (large models)
-- RAG-augmented queries
-- Code suggestion / IDE autocomplete
-- Embeddings / semantic search
-- AI voice / audio (per minute)
-- AI-generated images
-- AI-generated video (per second)
-- AI agents (quick & complex tasks)
+| Operation | Description | Examples |
+|-----------|-------------|----------|
+| **AI-powered web search** | Search with AI summary | Google AI Overviews, Bing Copilot search, Perplexity |
+| **Quick AI question** | Short reply from fast model | Claude Haiku, GPT-4o mini, Gemini Flash, Apple Intelligence |
+| **Detailed AI answer** | Thoughtful reply from top-tier model | ChatGPT (GPT-4/5), Claude Sonnet/Opus, Gemini Pro/Ultra |
+| **RAG-augmented answer** | AI searches docs, then answers | ChatGPT with knowledge files, internal chatbots, Notion Q&A |
+| **Code suggestion** | In-IDE autocomplete | GitHub Copilot, Cursor, Tabnine, Amazon Q Developer |
+| **Embedding / semantic search** | Convert text to vector for search | Algolia AI, ChatGPT custom GPT retrieval, recommendation engines |
+| **AI voice / audio (per minute)** | Transcription, TTS, music gen | Whisper, ElevenLabs, Suno, Udio, ChatGPT voice mode |
+| **AI-generated image** | Picture from text prompt | Midjourney, DALL·E, Stable Diffusion, Adobe Firefly |
+| **AI-generated video (per second)** | Video from prompt or clip | OpenAI Sora, Google Veo, Runway Gen-3 |
+| **AI agents** (quick & complex) | Multi-step autonomous task | Inbox sorting, doc summarization, report writing, web browsing |
 
-### Custom AI for Your Data
+### Custom AI for Your Data (2 operations)
 
-- Fine-tune small scale (LoRA)
-- Fine-tune large scale (full weights)
+| Operation | Description | Examples |
+|-----------|-------------|----------|
+| **Fine-tune small scale** | LoRA on ~7B-parameter model | Support ticket chatbot, branded writing assistant |
+| **Fine-tune large scale** | Full fine-tune on ~70B-parameter model | Hospital clinical assistant, law firm contract reviewer |
 
-### Building AI from Scratch
+### Building AI from Scratch (3 operations)
 
-- Small specialized AI
-- ChatGPT-class model
-- Frontier/"edge" AI model
+| Operation | Description | Examples |
+|-----------|-------------|----------|
+| **Small specialized AI** | BERT-base-scale (~110M params) from zero | Academic research, narrow industry tools |
+| **ChatGPT-class AI** | GPT-3-scale (~175B params) from zero | Large corporate LLM effort (months on thousands of GPUs) |
+| **Frontier/"edge" AI** | Latest cutting-edge model | GPT-4, Claude Opus, Gemini Ultra-class (only major labs) |
 
-## Data Sources
+## Data & Methodology
 
-- **Inference energy**: Luccioni et al. (2024), provider model cards, Hugging Face AI Energy Score (Dec 2025 leaderboard)
-- **Training energy**: Patterson et al. (2021), Strubell et al., de Vries
-- **Grid carbon intensity**: Ember Yearly Electricity Data 2024, EPA eGRID 2022, IEA, CER, DCCEEW
-- **Water usage**: Li et al. (2023), Ren et al. "Making AI Less Thirsty" (CACM 2025)
+### Sources
+
+- **Inference energy (kWh/query)**: 
+  - Open models: Hugging Face AI Energy Score (Dec 2025 leaderboard), measured on NVIDIA H100
+  - Proprietary models: Anchored to public benchmarks and Google's 2025 Gemini disclosure
+- **Training energy**: Patterson et al. (2021), Strubell et al., de Vries & Khanna
+- **Grid carbon intensity (gCO₂/kWh)**: 
+  - Countries: Ember Yearly Electricity Data 2024, IEA Electricity 2024
+  - US states: EPA eGRID 2022
+  - Canadian provinces: Canada Energy Regulator / NIR 2023
+  - Australian states: DCCEEW National Greenhouse Accounts 2023
+  - China: Ministry of Ecology & Environment Regional Grid factors
+- **Water usage**: 
+  - On-site WUE (L/kWh): Ren et al. "Making AI Less Thirsty" (CACM 2025)
+  - Off-site (electricity-generation) EWIF: Macknick et al. (NREL) technology factors + regional grid mix
 - **Equivalencies**: EPA Greenhouse Gas Equivalencies Calculator
 
-## What's Included
+### What's Included ✅
 
-✅ Operational compute energy (CPU/GPU/TPU)  
-✅ Datacenter cooling & overhead (PUE ≈ 1.12)  
-✅ Carbon from your local electricity grid  
-✅ Direct cooling water at the datacenter  
-✅ Embodied energy, carbon, and water (when toggled on) — manufacturing GPUs and servers, building the datacenter, end-of-line semiconductor fab water. Added as mid-range multipliers: +12% energy, +15% carbon, +25% water  
+- **Operational compute energy** (CPU/GPU/TPU)
+- **Datacenter cooling & overhead** (typical hyperscale PUE ≈ 1.12)
+- **Carbon based on your grid mix** (country, sub-region, or specific cloud region)
+- **Water**: on-site cooling at datacenter + scope-2 water from electricity generation
+- **Embodied energy, carbon, and water** (when toggled on via "Scope → + Embodied"):
+  - Manufacturing GPUs, servers, and datacenter buildings
+  - End-of-line semiconductor fab water
+  - Applied as: +12% energy, +15% carbon, +25% water (mid-range multipliers)
 
-## What's Not Included
+### What's Not Included ❌
 
-❌ Network transit and end-user device energy  
-❌ Training-cost amortization across billions of users  
-❌ Provider sustainability claims (focuses on physical grid mix)  
-❌ End-of-life e-waste  
-❌ Query-specific variations (output length, context size)  
+- **Network transit & end-user device energy** — ISP, transit providers, your laptop/phone. Small per query but not modeled.
+- **Training-cost amortization** — For ChatGPT (popular), training ÷ billions of queries ≈ negligible. For niche models, training cost can dominate.
+- **Provider sustainability claims** — This tool uses physical grid intensity, not "as-reported net-zero" or renewable-energy credits.
+- **End-of-life e-waste** — Retiring GPUs every 3–5 years creates waste streams beyond embodied figures.
+- **Query-specific variations** — Output length, context window, and reasoning depth can swing per-query energy by 10–100×. Figures here are mid-range averages.
 
-## Limitations
+### Limitations
 
-- **Order-of-magnitude estimates**: Useful for comparison, not precise accounting
-- **Mid-range averages**: Actual per-query energy varies 10–100× depending on output length, reasoning depth, and hardware
-- **Aggregated data**: Sub-national grids, seasonal variation, and specific datacenter PUE not fully captured
-- **Model estimates**: Not vendor-confirmed for every model; based on public benchmarks and Hugging Face AI Energy Score
-- **Embodied assumptions**: Uses fixed percentage multipliers; actual embodied share grows as operational decarbonizes
+- **Order-of-magnitude estimates**: Useful for comparison; actual costs vary widely
+- **Mid-range averages**: Per-query energy ±40% (measured), ±2× (derived), ±3× (rough/limited data)
+- **Aggregated data**: Sub-national grids, seasonal variation, specific datacenter PUE not fully modeled
+- **Model estimates**: Not vendor-confirmed; based on public benchmarks and AI Energy Score leaderboard
+- **Embodied percentages**: Fixed multipliers; actual embodied share grows as operational decarbonizes
+
+## Models Available
+
+### Small Models (Inference)
+
+**Open models (measured on H100)**:
+- Llama 3.1 8B, Mistral 7B, Gemma 2 2B, Microsoft Phi-4, SmolLM2 1.7B
+
+**Proprietary (estimates)**:
+- Claude Haiku, GPT-4o mini, Gemini Flash
+
+### Large Models (Inference)
+
+**Open models (measured on H100)**:
+- Llama 3 70B, Qwen2.5 72B, Mixtral 8x7B, gpt-oss-120B reasoning
+
+**Proprietary (estimates)**:
+- Claude Sonnet, Claude Opus, GPT-4o, GPT-5, Gemini 2.5 Pro
+
+### Image Generation
+
+**Open models (measured)**:
+- Stable Diffusion XL, SDXL Turbo, Stable Diffusion 2.1, Stable Cascade
+
+**Proprietary (estimates)**:
+- DALL·E 3, Midjourney v6, Adobe Firefly
+
+## Quick Presets
+
+Click a preset to populate all sliders with representative usage patterns:
+
+- **Light user** — 3–5 searches/questions per day; casual user
+- **Typical** (default) — Moderate daily AI use (~10 searches, 20 quick Q&As, 10 detailed answers, 5 images)
+- **Power user** — Heavy daily usage; writer, marketer, knowledge worker
+- **Software dev** — In-IDE code assist, chat, embeddings, light agent tasks
+- **Image creator** — Designer making AI images and short video clips
+- **Researcher** — Long-form chat, RAG, embeddings, occasional fine-tuning
+
+## Comparison & Sharing
+
+- **Compare**: Click "📊 Compare" to freeze your current scenario as **A**. Edit anything to see **B** compared against it. Shows deltas in energy, CO₂, and water.
+- **Share**: Click "🔗 Copy share link" to generate a URL encoding all your choices (sliders, models, region, frequency, scope). Paste to share your exact scenario.
+- **Reset**: Click "↻ Reset" to restore all sliders and selections to defaults.
+
+## View Modes
+
+- **Simple**: Clean layout emphasizing totals and everyday equivalencies (gas miles, shower, flights, etc.)
+- **Detailed**: Full per-operation breakdown table, extended methodology notes, all sources and caveats
 
 ## Technical Stack
 
-- **Vanilla JavaScript** (no frameworks)
-- **Chart.js 4.5.0** for visualizations
-- **HTML5 + CSS3** for responsive design
-- **Timezone-based geolocation** for region detection
+- **Vanilla JavaScript** (no frameworks or build tools)
+- **Chart.js 4.5.0** — for the energy comparison bar chart
+- **HTML5 + CSS3** — responsive design
+- **Timezone-based geolocation** — auto-detect region
 
 ## Files
 
-- `index.html` — Complete application (HTML, CSS, JavaScript inline)
+- `index.html` — Complete single-file application (HTML, CSS, JavaScript inline)
+- `README.md` — This file
 
 ## Dependencies
 
 - **Chart.js 4.5.0** (via CDN: jsdelivr)
-- Modern web browser (ES6+ JavaScript support)
+- Modern web browser with ES6+ JavaScript support
 
 ## Browser Support
 
 Tested on recent versions of:
-- Chrome/Chromium/Edge
+- Chrome / Chromium / Edge
 - Firefox
 - Safari
-
-## Model Selection
-
-The tool includes specific energy measurements for popular AI models, sourced from:
-
-- **Open models (measured)**: Hugging Face AI Energy Score leaderboard (December 2025), measured on NVIDIA H100
-  - Small: Claude Haiku, Llama 3.1 8B, Mistral 7B, Gemma 2 2B, Phi-4, SmolLM2
-  - Large: Llama 3 70B, Qwen2.5 72B, Mixtral 8x7B, gpt-oss-120B
-  - Images: Stable Diffusion XL, SDXL Turbo, Stable Diffusion 2.1, Stable Cascade
-
-- **Proprietary models (estimates)**: Claude (Haiku, Sonnet, Opus), OpenAI (GPT-4o mini, GPT-4o, GPT-5), Google (Gemini Flash, Gemini 2.5 Pro), DALL·E 3, Midjourney, Adobe Firefly
-
-## Sharing
-
-Click **"🔗 Copy share link"** to generate a URL that encodes your exact scenario (all slider values, model choices, region, frequency, scope). Share with others to compare results.
-
-## Reset
-
-Click **"↻ Reset"** to return all sliders, models, and selections to defaults.
-
-## View Modes
-
-- **Simple**: Clean view with CO₂ equivalencies (e.g., "X car miles", "X gallons of gasoline")
-- **Detailed**: Full per-operation breakdown table and extended methodology notes
-
-## Questions & Feedback
-
-- **GitHub**: [github.com/drewwheadon-hub](https://github.com/drewwheadon-hub)
-- **Built by**: Opus 4.7 with direction from Drew Wheadon
 
 ## License
 
 MIT License
 
-## Methodology Note
+## Built By
 
-All calculations assume mid-range public figures. Estimates reflect operational carbon and water only unless the **+ Embodied** scope is toggled on. See the **"What this tool does and doesn't include"** section in the tool itself for detailed methodology and limitations.
+- **Copilot (Claude)** — AI assistant, implementation
+- **Drew Wheadon** — Direction, concept, validation
+
+## Feedback & Questions
+
+- **GitHub**: [github.com/drewwheadon-hub](https://github.com/drewwheadon-hub)
+- **This tool**: Estimation only, not for compliance reporting or contractual carbon accounting
 
 ---
 
-**Last updated**: May 2026 (electricity grid estimates current through November 2024; model energy benchmarks from December 2025)
+**Last updated**: May 2026  
+**Data currency**: Electricity grid estimates (2023 generation averages, updated Nov 2024); Model energy benchmarks from December 2025 (Hugging Face AI Energy Score)
