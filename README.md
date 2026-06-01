@@ -1,6 +1,6 @@
 # AI Footprint Estimator
 
-An interactive tool to estimate the **energy consumption**, **carbon emissions**, and **water usage** of various AI operations — adjusted to your local electricity grid and compute location.
+An interactive tool to estimate the **energy consumption**, **carbon emissions**, and **water usage** of various AI operations adjusted to your local electricity grid and water use variables, as well as compute location.
 
 ## Overview
 
@@ -10,7 +10,7 @@ This tool helps you understand the environmental cost of using different AI serv
 - **CO₂ emissions** (kg CO₂e)
 - **Water usage** (liters)
 
-All numbers are **order-of-magnitude estimates** useful for comparison, not for compliance reporting.
+All numbers are **order-of-magnitude estimates** and useful for comparison, not for compliance reporting.
 
 ## Features
 
