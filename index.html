@@ -84,11 +84,47 @@ h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
   .topbar .loc label { display: flex; align-items: center; gap: 6px; width: 100%; }
   .topbar .loc select, .topbar .loc input { flex: 1; min-width: 0; }
   .topbar .loc-pill { align-self: flex-start; }
-  .topbar .modes, .topbar .share-btn { font-size: 11.5px; }
+  .topbar .modes, .topbar .share-btn { font-size: 12px; }
   .topbar > div[style*="flex"] { justify-content: space-between; flex-wrap: wrap; }
   /* Tooltips need viewport-aware width on tiny screens */
   .tip::after { width: 200px; }
+  /* Larger touch targets — aim for ~40-44px tappable area */
+  .tip { width: 22px; height: 22px; line-height: 22px; font-size: 11px; }
+  .quickset { padding: 8px 12px; min-height: 36px; font-size: 12px; }
+  .preset   { padding: 8px 14px; min-height: 38px; font-size: 12px; }
+  .scope-toggle .seg, .modes button, .share-btn,
+  .compare-banner button { padding: 8px 14px; min-height: 38px; font-size: 12px; }
+  .op-model select { padding: 7px 8px; min-height: 38px; font-size: 12.5px; max-width: 100%; }
+  select, input[type="number"] { padding: 8px 10px; min-height: 38px; font-size: 13px; }
+  /* Sliders fill the row on narrow viewports */
+  .op { grid-template-columns: 1fr; }
+  .op-controls { width: 100%; gap: 10px; }
+  .op-controls input[type="range"] { width: auto; flex: 1; min-width: 0; height: 28px; }
+  .op-controls .qty { min-width: 78px; }
+  /* Sticky mini-result bar on mobile */
+  .mobile-result-bar {
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    display: flex !important;
+  }
 }
+.mobile-result-bar { display: none; }
+@media (min-width: 761px) { .mobile-result-bar { display: none !important; } }
+.mobile-result-bar {
+  background: #fff; border: 1px solid #e6e3da; border-radius: 8px;
+  padding: 8px 10px; margin-bottom: 12px;
+  gap: 8px; justify-content: space-around; flex-wrap: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mobile-result-bar .mr-chip {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 0; flex: 1; line-height: 1.2;
+}
+.mobile-result-bar .mr-label {
+  font-size: 10px; color: #6b6b6b; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.mobile-result-bar .mr-value { font-size: 16px; font-weight: 600; margin-top: 1px; }
+.mobile-result-bar .mr-unit  { font-size: 10.5px; color: #6b6b6b; font-weight: 400; }
 
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
@@ -169,6 +205,13 @@ select, input[type="number"] {
 }
 .op-per strong { color: #1f1f1f; font-weight: 600; }
 .op-model { grid-column: 1 / -1; font-size: 11.5px; color: #555; margin-top: 4px; }
+.reasoning-toggle {
+  grid-column: 1 / -1; font-size: 11.5px; color: #555;
+  margin-top: 4px; display: flex; align-items: center; gap: 6px;
+  cursor: pointer; user-select: none;
+}
+.reasoning-toggle input[type="checkbox"] { margin: 0; cursor: pointer; }
+.reasoning-toggle .reasoning-hint { color: #8a8a8a; }
 .op-model select { font-size: 11.5px; padding: 2px 6px; max-width: 250px; }
 .disclosure {
   background: #fff; border: 1px solid #e6e3da; border-radius: 10px;
@@ -196,6 +239,26 @@ select, input[type="number"] {
 .metric .unit { font-size: 12px; color: #6b6b6b; margin-left: 3px; }
 .metric .range { font-size: 10.5px; color: #8a8a8a; margin-top: 3px; font-variant-numeric: tabular-nums; }
 .metric .vs    { font-size: 11px;   color: #555;   margin-top: 2px; font-variant-numeric: tabular-nums; }
+.metric .why-btn {
+  background: none; border: 0; padding: 4px 0 0; margin-top: 2px;
+  color: #475569; font-size: 10.5px; cursor: pointer;
+  text-decoration: underline; text-decoration-color: rgba(71,85,105,0.3);
+  font: inherit; font-size: 10.5px;
+}
+.metric .why-btn:hover { color: #1f1f1f; text-decoration-color: #1f1f1f; }
+.metric .why-panel {
+  display: none; font-size: 10.5px; color: #4a4a4a;
+  margin-top: 6px; background: #fff; border: 1px solid #e6e3da;
+  border-radius: 6px; padding: 7px 9px; line-height: 1.45;
+  text-align: left; font-variant-numeric: tabular-nums;
+}
+.metric .why-panel.open { display: block; }
+.metric .why-panel .why-row { display: flex; justify-content: space-between; gap: 8px; }
+.metric .why-panel .why-row .name { color: #555; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.metric .why-panel .why-row .val  { color: #1f1f1f; white-space: nowrap; font-weight: 500; }
+.metric .why-panel .why-sep { border-top: 1px dashed #e6e3da; margin: 5px 0; }
+.metric .why-panel .why-formula { color: #6b6b6b; font-style: italic; font-size: 10px; margin-bottom: 4px; }
+.metric .why-panel .why-total { font-weight: 600; color: #1f1f1f; }
 .metric .vs .delta { font-weight: 600; margin-left: 4px; }
 .metric .vs .delta.up   { color: #b35a3c; }
 .metric .vs .delta.down { color: #5a8a3c; }
@@ -213,6 +276,10 @@ body:not(.compare) .compare-banner { display: none; }
 body.compare       .compare-banner { display: flex; }
 .compare-banner strong { color: #1f1f1f; }
 .compare-banner .a-summary { color: #6b6b6b; font-size: 11.5px; }
+.compare-banner-summary { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; line-height: 1.4; }
+.compare-banner .cb-header { font-size: 12px; color: #4a4a4a; }
+.compare-banner .a-summary-line1 { font-size: 12px; color: #1f1f1f; font-weight: 500; }
+.compare-banner .a-summary-line2 { font-size: 11.5px; color: #6b6b6b; }
 .compare-banner button {
   margin-left: auto;
   border: 1px solid #d6d3ca; background: #fff; padding: 3px 9px;
@@ -255,6 +322,9 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .note { font-size: 11.5px; color: #8a8a8a; margin-top: 10px; }
 .chart-wrap { position: relative; height: 220px; margin: 4px 0 8px; }
+.chart-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 0; flex-wrap: wrap; }
+.chart-head h2 { margin: 0; }
+.chart-toggle button { font-size: 11.5px; padding: 4px 10px; }
 .chart-wrap canvas { width: 100% !important; height: 100% !important; }
 
 .scope-toggle {
@@ -327,6 +397,12 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
     </div>
   </div>
 
+  <div class="mobile-result-bar" id="mobileResultBar" aria-label="Estimated footprint (sticky)">
+    <span class="mr-chip"><span class="mr-label">Energy</span><span class="mr-value"><span id="mvE">0</span><span class="mr-unit" id="muE"> kWh</span></span></span>
+    <span class="mr-chip"><span class="mr-label">CO₂e</span><span class="mr-value"><span id="mvC">0</span><span class="mr-unit" id="muC"> kg</span></span></span>
+    <span class="mr-chip"><span class="mr-label">Water</span><span class="mr-value"><span id="mvW">0</span><span class="mr-unit" id="muW"> L</span></span></span>
+  </div>
+
   <div class="grid">
     <div class="card">
       <h2>Choose what you're running</h2>
@@ -371,6 +447,10 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
           </div>
           <div class="op-desc">A thoughtful reply from a top-tier model — drafting, coding, reasoning.</div>
           <div class="op-eg">Examples: ChatGPT (GPT-4/5), Claude Sonnet/Opus, Gemini Pro/Ultra.</div>
+          <label class="reasoning-toggle">
+            <input type="checkbox" id="reasoningChk">
+            <span>Reasoning mode <span class="reasoning-hint">— multiply energy ×30<i class="tip" tabindex="0" data-tip="Reasoning models (o-series, Claude with extended thinking, DeepSeek R1, gpt-oss reasoning, Gemini Deep Think) use ~30× more energy on average than the same query without reasoning — and up to 150–700× per HF AI Energy Score v2 (June 2026 leaderboard) due to long chains of thought.">?</i></span></span>
+          </label>
         </div>
 
         <div class="op" data-op="ragQuery">
@@ -518,8 +598,11 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
     <div class="card">
       <h2 id="footprintHeading">Estimated annual footprint</h2>
       <div class="compare-banner" id="compareBanner">
-        <span><strong>Comparing</strong> · A frozen, B is your live edits</span>
-        <span class="a-summary" id="compareASummary">—</span>
+        <div class="compare-banner-summary">
+          <span class="cb-header"><strong>Comparing</strong> · A frozen, B is your live edits</span>
+          <span class="a-summary-line1" id="compareALine1">—</span>
+          <span class="a-summary-line2" id="compareALine2"></span>
+        </div>
         <button id="compareExit" type="button" title="Exit compare mode">✕ Exit</button>
       </div>
       <div class="scope-toggle">
@@ -535,22 +618,34 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
           <div class="value"><span id="vE">0</span><span class="unit" id="uE">kWh</span></div>
           <div class="range" id="rE">&nbsp;</div>
           <div class="vs"    id="vsE">&nbsp;</div>
+          <button class="why-btn" data-why="E" type="button" aria-expanded="false">Why?</button>
+          <div class="why-panel" id="whyE"></div>
         </div>
         <div class="metric">
           <div class="label">CO₂e</div>
           <div class="value"><span id="vC">0</span><span class="unit" id="uC">kg</span></div>
           <div class="range" id="rC">&nbsp;</div>
           <div class="vs"    id="vsC">&nbsp;</div>
+          <button class="why-btn" data-why="C" type="button" aria-expanded="false">Why?</button>
+          <div class="why-panel" id="whyC"></div>
         </div>
         <div class="metric">
           <div class="label">Water</div>
           <div class="value"><span id="vW">0</span><span class="unit" id="uW">L</span></div>
           <div class="range" id="rW">&nbsp;</div>
           <div class="vs"    id="vsW">&nbsp;</div>
+          <button class="why-btn" data-why="W" type="button" aria-expanded="false">Why?</button>
+          <div class="why-panel" id="whyW"></div>
         </div>
       </div>
 
-      <h2 style="margin-top:12px;" id="chartHeading">Comparison (annualized energy)</h2>
+      <div class="chart-head">
+        <h2 id="chartHeading">Comparison (annualized energy)</h2>
+        <div class="modes chart-toggle" role="tablist" aria-label="Chart type">
+          <button class="active" data-chart="bar" type="button">Bar</button>
+          <button data-chart="doughnut" type="button">Doughnut</button>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="chart" aria-label="Energy comparison chart"></canvas></div>
       <div class="legend-icons">
         <span><span class="swatch" style="background:#6aa84f"></span> Chat / search</span>
@@ -580,11 +675,11 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
   <div class="sources">
     <strong>About the numbers.</strong> Estimates are mid-range public figures and should be read as order-of-magnitude — actual costs vary widely by hardware, datacenter PUE, model architecture, batch size, and grid mix.<br>
     <span class="detail-block">
-      <strong>Inference per-query energy.</strong> Model-picker figures for open models are measured values from Hugging Face's <a href="https://huggingface.github.io/AIEnergyScore/" target="_blank" rel="noopener">AI Energy Score</a> leaderboard (GPU energy, NVIDIA H100, refreshed Dec 2025), converted to a full-datacenter estimate (×1.5 for CPU/RAM, networking, and PUE). Proprietary-model figures are estimates anchored to those measurements and to Google's 2025 <a href="https://services.google.com/fh/files/misc/measuring_the_environmental_impact_of_delivering_ai_at_google_scale.pdf" target="_blank" rel="noopener">Gemini environmental disclosure</a> (~0.24 Wh per median text prompt). Earlier benchmarks: Luccioni, Jernite &amp; Strubell (2024), <a href="https://arxiv.org/abs/2311.16863" target="_blank" rel="noopener">“Power Hungry Processing,”</a> and de Vries (2023), <a href="https://www.cell.com/joule/fulltext/S2542-4351(23)00365-3" target="_blank" rel="noopener">Joule</a>. Video estimate (~50 Wh/sec) is a rough public extrapolation pending audited figures.<br>
+      <strong>Inference per-query energy.</strong> Model-picker figures for open models are measured values from Hugging Face's <a href="https://huggingface.github.io/AIEnergyScore/" target="_blank" rel="noopener">AI Energy Score</a> leaderboard (GPU energy, NVIDIA H100, refreshed Dec 2025), converted to a full-datacenter estimate (×1.5 for CPU/RAM, networking, and PUE). Proprietary-model figures are estimates anchored to those measurements and to two hyperscaler disclosures published in 2025: Google's <a href="https://services.google.com/fh/files/misc/measuring_the_environmental_impact_of_delivering_ai_at_google_scale.pdf" target="_blank" rel="noopener">Gemini environmental disclosure</a> (~0.24 Wh + 0.26 mL per median text prompt) and Sam Altman's <a href="https://www.datacenterdynamics.com/en/news/sam-altman-chatgpt-queries-consume-034-watt-hours-of-electricity-and-0000085-gallons-of-water/" target="_blank" rel="noopener">ChatGPT per-query figure</a> (~0.34 Wh + 0.32 mL per query, June 2025) — close agreement between the two independent disclosures. Earlier benchmarks: Luccioni, Jernite &amp; Strubell (2024), <a href="https://arxiv.org/abs/2311.16863" target="_blank" rel="noopener">“Power Hungry Processing,”</a> and de Vries (2023), <a href="https://www.cell.com/joule/fulltext/S2542-4351(23)00365-3" target="_blank" rel="noopener">Joule</a>. Video estimate (~50 Wh/sec) is a rough public extrapolation pending audited figures.<br>
       <strong>AI agent tasks.</strong> An agent run is a chain of model calls plus tool invocations. We estimate ~10 calls per quick task (≈20 Wh) and ~100 calls per complex task (≈250 Wh), assuming a mix of small and frontier-class models. Per-task energy is highly task-dependent — published audits are scarce. See Stojkovic et al. (2024), <a href="https://arxiv.org/abs/2407.12480" target="_blank" rel="noopener">“Towards Greener LLM Serving,”</a> and Hugging Face's <a href="https://huggingface.co/blog/sasha/ai-environment-primer" target="_blank" rel="noopener">AI environmental impact primer</a> for related context.<br>
       <strong>Training.</strong> Patterson et al. (2021), <a href="https://arxiv.org/abs/2104.10350" target="_blank" rel="noopener">“Carbon Emissions and Large Neural Network Training”</a> &amp; Patterson et al. (2022), <a href="https://arxiv.org/abs/2204.05149" target="_blank" rel="noopener">“The Carbon Footprint of Machine Learning Training Will Plateau, Then Shrink.”</a> GPT-3: ≈1,287 MWh, 552 t CO₂; BERT-base: ≈1.5 MWh. Llama 2 70B: ≈688 MWh (<a href="https://arxiv.org/abs/2307.09288" target="_blank" rel="noopener">Meta Llama 2 paper</a>). Frontier (GPT-4-class) ≈50,000 MWh per <a href="https://epoch.ai/" target="_blank" rel="noopener">Epoch AI</a> compute estimates.<br>
-      <strong>Water.</strong> Modeled as energy × (climate-banded on-site WUE + region EWIF). On-site WUE bands — cold 0.3, cool 0.8, warm 1.2, hot-humid 2.0, hot-arid 2.5 L/kWh — sit inside Ren et al.'s reported 1–9 L/kWh weather-dependent range and are anchored to Google's 1.0 L/kWh global annualized average (Google &amp; Microsoft 2024 sustainability reports). Off-site EWIF comes from Li, Yang, Islam &amp; Ren (2025), <a href="https://dl.acm.org/doi/10.1145/3724499" target="_blank" rel="noopener">“Making AI Less Thirsty”</a> (CACM) — Table 1 publishes EWIF for 8 U.S. states (e.g., Texas 1.29, Virginia 2.39, Washington 9.50) and 9 countries (e.g., Ireland 1.48, Australia 4.26, Sweden 6.02). Values for other regions are derived from regional grid mix weighted by <a href="https://www.nrel.gov/docs/fy11osti/50900.pdf" target="_blank" rel="noopener">Macknick et al. (NREL)</a> technology water-consumption factors. U.S. national average 3.14 L/kWh; LBNL 2024 reports 4.35 L/kWh as a more recent figure.<br>
-      <strong>Grid carbon intensity (gCO₂/kWh).</strong> Countries: <a href="https://ember-energy.org/data/yearly-electricity-data/" target="_blank" rel="noopener">Ember Yearly Electricity Data 2024</a> and <a href="https://www.iea.org/data-and-statistics/data-product/electricity-information" target="_blank" rel="noopener">IEA Electricity Information 2024</a> (2023 generation averages). US states: <a href="https://www.epa.gov/egrid" target="_blank" rel="noopener">EPA eGRID 2022</a>. Canadian provinces: <a href="https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/" target="_blank" rel="noopener">Canada Energy Regulator</a> and <a href="https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/inventory.html" target="_blank" rel="noopener">National Inventory Report 2023</a>. Australian states: <a href="https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors" target="_blank" rel="noopener">DCCEEW National Greenhouse Accounts 2023</a>. China regional grids: Ministry of Ecology &amp; Environment baseline emission factors. This tool uses <em>average</em> (not marginal) emission factors — the consensus basis for carbon accounting; see <a href="https://www.electricitymaps.com/content/marginal-vs-average-real-time-decision-making" target="_blank" rel="noopener">Electricity Maps</a> and the GHG Protocol Scope 2 Guidance.<br>
+      <strong>Water.</strong> Modeled as energy × (climate-banded on-site WUE + region EWIF). On-site WUE bands — cold 0.2, cool 0.55, warm 0.85, hot-humid 1.4, hot-arid 1.75 L/kWh — sit inside Ren et al.'s reported 1–9 L/kWh weather-dependent range and are anchored to Microsoft's reported FY24 global average of 0.30 L/kWh (May 2025 sustainability report, down from FY21's 0.49) alongside Google's 1.0 L/kWh. Off-site EWIF comes from Li, Yang, Islam &amp; Ren (2025), <a href="https://dl.acm.org/doi/10.1145/3724499" target="_blank" rel="noopener">“Making AI Less Thirsty”</a> (CACM) — Table 1 publishes EWIF for 8 U.S. states (e.g., Texas 1.29, Virginia 2.39, Washington 9.50) and 9 countries (e.g., Ireland 1.48, Australia 4.26, Sweden 6.02). Values for other regions are derived from regional grid mix weighted by <a href="https://www.nrel.gov/docs/fy11osti/50900.pdf" target="_blank" rel="noopener">Macknick et al. (NREL)</a> technology water-consumption factors. U.S. national average 3.14 L/kWh; LBNL 2024 reports 4.35 L/kWh as a more recent figure.<br>
+      <strong>Grid carbon intensity (gCO₂/kWh).</strong> Countries: <a href="https://ember-energy.org/data/yearly-electricity-data/" target="_blank" rel="noopener">Ember Yearly Electricity Data 2024</a> and <a href="https://www.iea.org/data-and-statistics/data-product/electricity-information" target="_blank" rel="noopener">IEA Electricity Information 2024</a> (2023 generation averages). US states: <a href="https://cornerstonedata.org/blog/egrid2024" target="_blank" rel="noopener">Cornerstone eGRID2024 community release</a> (March 2026; subregion-level changes applied — NPCC Upstate NY +13%, SPP North −10%, others ~−3%; pending official EPA eGRID2024). Canadian provinces: <a href="https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/" target="_blank" rel="noopener">Canada Energy Regulator</a> and <a href="https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/inventory.html" target="_blank" rel="noopener">National Inventory Report 2023</a>. Australian states: <a href="https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors" target="_blank" rel="noopener">DCCEEW National Greenhouse Accounts 2023</a>. China regional grids: Ministry of Ecology &amp; Environment baseline emission factors. This tool uses <em>average</em> (not marginal) emission factors — the consensus basis for carbon accounting; see <a href="https://www.electricitymaps.com/content/marginal-vs-average-real-time-decision-making" target="_blank" rel="noopener">Electricity Maps</a> and the GHG Protocol Scope 2 Guidance.<br>
       <strong>Compute (data center) location.</strong> The artifact cannot directly observe which region served a given query — major consumer AI products don't expose that to end users. The presets are <em>likely served from</em> estimates based on public statements about provider infrastructure (<a href="https://aws.amazon.com/blogs/aws/aws-bedrock-anthropic-claude/" target="_blank" rel="noopener">AWS Bedrock/Anthropic</a>, <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models" target="_blank" rel="noopener">Azure OpenAI region availability</a>, <a href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations" target="_blank" rel="noopener">GCP Vertex AI regions</a>). Region-level grid intensity for cloud regions is approximated from the local state/country average. For exact figures, see cloud-provider carbon dashboards (<a href="https://aws.amazon.com/aws-cost-management/aws-customer-carbon-footprint-tool/" target="_blank" rel="noopener">AWS</a>, <a href="https://cloud.google.com/carbon-footprint" target="_blank" rel="noopener">GCP</a>, <a href="https://learn.microsoft.com/en-us/industry/sustainability/emissions-impact-dashboard" target="_blank" rel="noopener">Azure</a>) — accessible only to the account holder.<br>
       <strong>Equivalencies.</strong> <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator" target="_blank" rel="noopener">EPA Greenhouse Gas Equivalencies Calculator</a> (gas passenger vehicle ≈ 400 g CO₂/mi; EV ≈ 85 g CO₂/mi on US grid; mature tree ≈ 21 kg CO₂/yr; average US home ≈ 10,800 kWh/yr); 9 W LED bulb; 5 Wh per smartphone charge; 77 Wh per hour of Netflix streaming (Carbon Trust 2021); Bitcoin transaction ≈ 830 kWh (Cambridge CBECI).
     </span>
@@ -600,7 +695,7 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
       <li>Operational energy for the AI compute itself (CPU/GPU/TPU)</li>
       <li>Datacenter cooling and overhead (typical hyperscale PUE ≈ 1.12<i class="tip" tabindex="0" data-tip="PUE (Power Usage Effectiveness) = total datacenter energy divided by computing energy. ~1.12 is the hyperscale average; older or smaller datacenters run 1.4–2.0. Sources: Uptime Institute 2024 Global Data Center Survey; Google and Microsoft PUE disclosures.">?</i>)</li>
       <li>Carbon based on your selected grid mix (country, sub-region, or specific cloud region)</li>
-      <li>Cooling water at the datacenter, plus scope-2 water used to generate the electricity<i class="tip" tabindex="0" data-tip="Water = energy × (on-site WUE + region EWIF). On-site WUE is climate-banded — 0.3 cold / 0.8 cool / 1.2 warm / 2.0 hot-humid / 2.5 hot-arid L/kWh — anchored to Ren et al.'s 1–9 L/kWh range and Google's 1.0 global average. EWIF uses Ren et al. Table 1 directly for 8 U.S. states and 9 countries; rest derives from grid mix × NREL factors. Sources: Ren et al. (2025); Macknick et al. (NREL); LBNL 2024 DC Energy Report.">?</i></li>
+      <li>Cooling water at the datacenter, plus scope-2 water used to generate the electricity<i class="tip" tabindex="0" data-tip="Water = energy × (on-site WUE + region EWIF). On-site WUE is climate-banded — 0.2 cold / 0.55 cool / 0.85 warm / 1.4 hot-humid / 1.75 hot-arid L/kWh — anchored to Ren et al.'s 1–9 L/kWh range, Microsoft FY24's reported 0.30 L/kWh global, and Google's 1.0 global average. EWIF uses Ren et al. Table 1 directly for 8 U.S. states and 9 countries; rest derives from grid mix × NREL factors. Sources: Ren et al. (2025); Macknick et al. (NREL); LBNL 2024 DC Energy Report.">?</i></li>
       <li class="embodied-mode" style="display:none"><strong>Embodied energy, carbon, and water</strong> — manufacturing GPUs and servers, building the datacenter, end-of-line semiconductor fab water. Added as mid-range multipliers on top of operational: +12% energy, +15% carbon, +25% water.</li>
     </ul>
     <p style="margin: 8px 0 6px;"><strong>Not included (would change the picture in ways this tool doesn't model):</strong></p>
@@ -620,9 +715,9 @@ table.bd td.num { text-align: right; font-variant-numeric: tabular-nums; }
       Energy figures come from peer-reviewed research (Luccioni et al., Patterson et al., de Vries), Google's 2025 Gemini disclosure, and Hugging Face's <a href="https://huggingface.github.io/AIEnergyScore/" target="_blank" rel="noopener">AI Energy Score</a><i class="tip" tabindex="0" data-tip="AI Energy Score measures GPU energy only, on a standardized 1,000-query dataset, on an NVIDIA H100. Open-model figures here are converted to a full-datacenter estimate — about ×1.5 to add CPU/RAM, networking, storage, and PUE. Source: huggingface.github.io/AIEnergyScore.">?</i> measured benchmarks. The model picker on chat and image rows lets you swap in a specific model: rows marked <strong>(measured)</strong> use AI Energy Score values for open models; rows marked <strong>(estimate)</strong> are mid-range estimates for proprietary models, which are not publicly benchmarked.
       <br><br>
       Carbon = energy × <em>average</em> grid carbon intensity (gCO₂/kWh)<i class="tip" tabindex="0" data-tip="This tool uses average grid emissions, not marginal. Average factors reflect a region's actual generation mix and are the consensus basis for carbon accounting; marginal factors (the next plant to ramp up) are unsuitable for footprint reporting and are excluded by major standards. Sources: Electricity Maps; GHG Protocol Scope 2 Guidance.">?</i>.
-      Grid intensities are 2022–2023 generation averages: countries from Ember Yearly Electricity Data 2024 and IEA Electricity 2024; US states from EPA eGRID 2022; Canadian provinces from Canada Energy Regulator + National Inventory Report 2023; Australian states from DCCEEW; China regional grids from MEE baseline factors. The "Compute location" presets approximate where major US providers run inference based on public statements about their infrastructure.
+      Grid intensities are 2022–2023 generation averages: countries from Ember Yearly Electricity Data 2024 and IEA Electricity 2024; US states from <a href="https://cornerstonedata.org/blog/egrid2024" target="_blank" rel="noopener">Cornerstone eGRID2024 community release</a> (March 2026); Canadian provinces from Canada Energy Regulator + National Inventory Report 2023; Australian states from DCCEEW; China regional grids from MEE baseline factors. The "Compute location" presets approximate where major US providers run inference based on public statements about their infrastructure.
       <br><br>
-      Water = energy × (on-site WUE + region EWIF). On-site WUE is climate-banded: ~0.3 L/kWh in cold free-air-cooling regions (Nordics, north US/Canada), ~0.8 in cool temperate (UK, Ireland, northern US), ~1.2 in warm continental (central US, southern Europe, China), ~2.0 in hot-humid (SE US, SE Asia), and ~2.5 in hot-arid (SW US, Middle East, Australian interior). These bands sit inside Ren et al.'s reported 1–9 L/kWh weather-dependent range and are anchored to Google's published 1.0 L/kWh global annualized average. The off-site Electricity Water Intensity Factor uses Ren et al. Table 1 values directly where published (eight U.S. states and nine countries plus the U.S. average — e.g., Texas 1.29, Washington 9.50, Sweden 6.02); other regions derive from grid mix × NREL technology water-consumption factors. Hour-of-day and seasonal swings in WUE are not modeled.
+      Water = energy × (on-site WUE + region EWIF). On-site WUE is climate-banded: ~0.2 L/kWh in cold free-air-cooling regions (Nordics, north US/Canada), ~0.55 in cool temperate (UK, Ireland, northern US), ~0.85 in warm continental (central US, southern Europe, China), ~1.4 in hot-humid (SE US, SE Asia), and ~1.75 in hot-arid (SW US, Middle East, Australian interior). These bands sit inside Ren et al.'s reported 1–9 L/kWh weather-dependent range and are anchored to Microsoft's FY24 reported global 0.30 L/kWh (May 2025 sustainability report) and Google's published 1.0 L/kWh global annualized average. The off-site Electricity Water Intensity Factor uses Ren et al. Table 1 values directly where published (eight U.S. states and nine countries plus the U.S. average — e.g., Texas 1.29, Washington 9.50, Sweden 6.02); other regions derive from grid mix × NREL technology water-consumption factors. Hour-of-day and seasonal swings in WUE are not modeled.
       <br><br>
       <span class="embodied-mode" style="display:none">
         <strong>Embodied (when scope = "+ Embodied"):</strong> applied as flat percentage multipliers on top of operational figures —
@@ -795,32 +890,32 @@ const GRID = [
   ["AE", "UAE",  498],
   ["UA", "Ukraine",  250],
   ["GB", "United Kingdom",  207],
-  ["US", "United States",  390],
+  ["US", "United States",  340],
   ["VN", "Vietnam",  525],
   ["WORLD", "World average",  480],
 ];
 
 // Sub-national CO2 intensity (gCO2/kWh) by country.
-// Sources: USA = EPA eGRID 2022. Canada = Canada Energy Regulator / NIR 2023.
+// Sources: USA = Cornerstone eGRID 2024 community release (March 2026), pending official EPA eGRID2024. Canada = Canada Energy Regulator / NIR 2023.
 // Australia = DCCEEW National Greenhouse Accounts 2023. China = MEE Regional Grid factors.
 const SUBREGIONS = {
   US: {
     label: "US state",
     items: [
-      ["",   "All states (US average)", 390],
-      ["AK", "Alaska", 458], ["AL", "Alabama", 327], ["AR", "Arkansas", 440], ["AZ", "Arizona", 327],
-      ["CA", "California", 213], ["CO", "Colorado", 494], ["CT", "Connecticut", 240], ["DC", "District of Columbia", 263],
-      ["DE", "Delaware", 395], ["FL", "Florida", 386], ["GA", "Georgia", 308], ["HI", "Hawaii", 621],
-      ["IA", "Iowa", 345], ["ID", "Idaho", 109], ["IL", "Illinois", 263], ["IN", "Indiana", 735],
-      ["KS", "Kansas", 395], ["KY", "Kentucky", 757], ["LA", "Louisiana", 395], ["MA", "Massachusetts", 263],
-      ["MD", "Maryland", 245], ["ME", "Maine", 100], ["MI", "Michigan", 444], ["MN", "Minnesota", 331],
-      ["MO", "Missouri", 694], ["MS", "Mississippi", 349], ["MT", "Montana", 531], ["NC", "North Carolina", 299],
-      ["ND", "North Dakota", 626], ["NE", "Nebraska", 531], ["NH", "New Hampshire", 104], ["NJ", "New Jersey", 231],
-      ["NM", "New Mexico", 490], ["NV", "Nevada", 313], ["NY", "New York", 231], ["OH", "Ohio", 503],
-      ["OK", "Oklahoma", 399], ["OR", "Oregon", 109], ["PA", "Pennsylvania", 327], ["RI", "Rhode Island", 399],
-      ["SC", "South Carolina", 240], ["SD", "South Dakota", 172], ["TN", "Tennessee", 318], ["TX", "Texas", 349],
-      ["UT", "Utah", 680], ["VA", "Virginia", 304], ["VT", "Vermont", 9], ["WA", "Washington", 91],
-      ["WI", "Wisconsin", 499], ["WV", "West Virginia", 826], ["WY", "Wyoming", 839],
+      ["",   "All states (US average)", 340],
+      ["AK", "Alaska", 358], ["AL", "Alabama", 314], ["AR", "Arkansas", 439], ["AZ", "Arizona", 304],
+      ["CA", "California", 174], ["CO", "Colorado", 480], ["CT", "Connecticut", 238], ["DC", "District of Columbia", 174],
+      ["DE", "Delaware", 309], ["FL", "Florida", 347], ["GA", "Georgia", 315], ["HI", "Hawaii", 613],
+      ["IA", "Iowa", 279], ["ID", "Idaho", 138], ["IL", "Illinois", 209], ["IN", "Indiana", 645],
+      ["KS", "Kansas", 300], ["KY", "Kentucky", 768], ["LA", "Louisiana", 336], ["MA", "Massachusetts", 365],
+      ["MD", "Maryland", 230], ["ME", "Maine", 140], ["MI", "Michigan", 351], ["MN", "Minnesota", 331],
+      ["MO", "Missouri", 640], ["MS", "Mississippi", 365], ["MT", "Montana", 469], ["NC", "North Carolina", 275],
+      ["ND", "North Dakota", 530], ["NE", "Nebraska", 419], ["NH", "New Hampshire", 121], ["NJ", "New Jersey", 207],
+      ["NM", "New Mexico", 341], ["NV", "Nevada", 283], ["NY", "New York", 240], ["OH", "Ohio", 470],
+      ["OK", "Oklahoma", 285], ["OR", "Oregon", 161], ["PA", "Pennsylvania", 285], ["RI", "Rhode Island", 370],
+      ["SC", "South Carolina", 246], ["SD", "South Dakota", 147], ["TN", "Tennessee", 291], ["TX", "Texas", 340],
+      ["UT", "Utah", 626], ["VA", "Virginia", 238], ["VT", "Vermont", 23], ["WA", "Washington", 117],
+      ["WI", "Wisconsin", 512], ["WV", "West Virginia", 866], ["WY", "Wyoming", 807],
     ]
   },
   CA: {
@@ -894,16 +989,16 @@ const DC_PRESETS = [
 
 // ----- Water modeling -----
 // On-site (scope-1) WUE applied to the AI compute (L water per kWh of total DC
-// energy). Climate-banded — Ren et al. report a weather-dependent range of
-// 1–9 L/kWh, with 1.0 L/kWh as Google's reported global annualized average and
-// Microsoft's Arizona site (hot-arid) at 1.63 L/kWh in the same table.
-// Bands here anchor to those signposts:
-//   cold     ≈ 0.3   (free-air cooling viable year-round — Nordics, north US/Canada)
-//   cool     ≈ 0.8   (mild temperate — UK, Ireland, northern US, much of Europe)
-//   warm     ≈ 1.2   (continental warm — central US, southern Europe, China)
-//   hot_humid ≈ 2.0  (humid subtropical — SE US, SE Asia, coastal Brazil)
-//   hot_arid  ≈ 2.5  (hot dry / desert — SW US, Middle East, Australian interior)
-const CLIMATE_WUE = { cold: 0.3, cool: 0.8, warm: 1.2, hot_humid: 2.0, hot_arid: 2.5 };
+// energy). Climate-banded — anchored to Ren et al.'s 1–9 L/kWh weather-dependent
+// range AND to Microsoft's reported FY24 global average of 0.30 L/kWh (May 2025
+// sustainability report, dropping from FY21's 0.49). Bands here lowered ~30%
+// from prior anchoring to reflect modern hyperscale cooling efficiency:
+//   cold     ≈ 0.2   (free-air cooling viable year-round — Nordics, north US/Canada)
+//   cool     ≈ 0.55  (mild temperate — UK, Ireland, northern US, much of Europe)
+//   warm     ≈ 0.85  (continental warm — central US, southern Europe, China)
+//   hot_humid ≈ 1.4  (humid subtropical — SE US, SE Asia, coastal Brazil)
+//   hot_arid  ≈ 1.75 (hot dry / desert — SW US, Middle East, Australian interior)
+const CLIMATE_WUE = { cold: 0.2, cool: 0.55, warm: 0.85, hot_humid: 1.4, hot_arid: 1.75 };
 const CLIMATE_COUNTRY = {
   AR:"warm", AU:"warm", AT:"cool", BD:"hot_humid", BE:"cool", BR:"hot_humid",
   CA:"cold", CL:"warm", CN:"warm", CO:"warm", CZ:"cool", DK:"cold",
@@ -1069,6 +1164,8 @@ let freq = "day"; // day | week | month | year | once
 let modelChoices = {};     // op key -> selected model id; "" or missing = use OPS default
 let includeEmbodied = false; // false = operational only; true = operational + embodied
 let compareA = null;       // when non-null, holds the frozen A scenario for compare mode
+let chartType = "bar";     // "bar" (horizontal log-scale) | "doughnut" (proportional shares)
+let reasoningMode = false; // when true, chatLarge energy ×30 to reflect reasoning-mode token blowup
 
 // Mid-range multipliers applied on top of operational figures when scope = "+ Embodied".
 // Energy: hardware + datacenter construction embodied energy ≈ 12% of operational lifetime energy
@@ -1082,13 +1179,19 @@ function scopeMult(resource) {
 }
 
 // Resolve effective per-instance energy/water — model override if chosen, else OPS default.
+// Applies the reasoning multiplier (×30) to chatLarge when reasoningMode is on —
+// reasoning models use ~30× the energy on average per HF AI Energy Score v2
+// (huggingface.co/blog/sasha/ai-energy-score-v2, June 2026 leaderboard refresh).
 function opKwh(op) {
+  let base;
   const choice = modelChoices[op];
   if (choice && MODELS[op]) {
     const m = MODELS[op].find(x => x.id === choice);
-    if (m) return m.kWh;
+    if (m) base = m.kWh;
   }
-  return OPS[op].kWh;
+  if (base === undefined) base = OPS[op].kWh;
+  if (op === "chatLarge" && reasoningMode) return base * 30;
+  return base;
 }
 // Water for one instance of `op` = energy × (on-site WUE + region EWIF).
 // Replaces the static `waterL` fields on OPS/MODELS so the water number now
@@ -1373,9 +1476,74 @@ function formatRange(low, high, unit) {
   return `range: ${lv} ${lu} – ${hv} ${hu}`;
 }
 
+// "Why this number?" panel builders — surface the actual math behind each metric.
+function whyRegionLabel() {
+  const dc = dcPreset();
+  if (dc[2] != null) return dc[1];
+  const ce = GRID.find(g => g[0] === region) || GRID.find(g => g[0] === "WORLD");
+  const country = ce ? ce[1] : region;
+  if (subregion && SUBREGIONS[region]) {
+    const sub = SUBREGIONS[region].items.find(x => x[0] === subregion);
+    if (sub) return `${sub[1]}, ${country}`;
+  }
+  return country;
+}
+function whyClimateBand() {
+  const dc = dcPreset();
+  if (dc[2] != null && CLIMATE_DC[dc[0]]) return CLIMATE_DC[dc[0]];
+  if (subregion && region === "US" && CLIMATE_US_STATE[subregion]) return CLIMATE_US_STATE[subregion];
+  return CLIMATE_COUNTRY[region] || "warm";
+}
+function whyRow(name, val) { return `<div class="why-row"><span class="name">${name}</span><span class="val">${val}</span></div>`; }
+function buildWhyEnergy(rows, totalKwh) {
+  if (totalKwh <= 0) return `<div class="why-formula">Move a slider to see the breakdown.</div>`;
+  const sorted = rows.filter(r => r.kwh > 0).sort((a,b) => b.kwh - a.kwh);
+  const top = sorted.slice(0, 5);
+  const restCount = sorted.length - top.length;
+  const restKwh = sorted.slice(5).reduce((s, r) => s + r.kwh, 0);
+  const opLines = top.map(r => {
+    const [v, u] = format(r.kwh, "kWh");
+    const [pkv, pku] = format(opKwh(r.op), "kWh");
+    return whyRow(`${r.label} — ${r.count.toLocaleString()} × ${pkv} ${pku}`, `${v} ${u}`);
+  }).join("");
+  let restLine = "";
+  if (restCount > 0) {
+    const [rv, ru] = format(restKwh, "kWh");
+    restLine = whyRow(`+ ${restCount} more operation${restCount === 1 ? "" : "s"}`, `${rv} ${ru}`);
+  }
+  const scope = includeEmbodied ? `<div class="why-sep"></div>${whyRow("Scope multiplier (+ embodied)", "× " + (1 + EMBODIED_PCT.energy).toFixed(2))}` : "";
+  const [tv, tu] = format(totalKwh, "kWh");
+  return `<div class="why-formula">Σ (count × per-op kWh) × scope</div>${opLines}${restLine}${scope}<div class="why-sep"></div><div class="why-row"><span class="name why-total">Total energy</span><span class="val why-total">${tv} ${tu}</span></div>`;
+}
+function buildWhyCarbon(totalKwh, totalCO2g, ciVal) {
+  if (totalKwh <= 0) return `<div class="why-formula">Move a slider to see the breakdown.</div>`;
+  const [ev, eu] = format(totalKwh, "kWh");
+  const [tv, tu] = format(totalCO2g / 1000, "kg");
+  const scope = includeEmbodied ? whyRow("Scope multiplier (+ embodied)", "× " + (1 + EMBODIED_PCT.carbon).toFixed(2)) : "";
+  return `<div class="why-formula">Energy × grid intensity ÷ 1,000 × scope</div>${whyRow("Energy", `${ev} ${eu}`)}${whyRow(`Grid intensity (${whyRegionLabel()})`, `${ciVal} gCO₂/kWh`)}${scope}<div class="why-sep"></div><div class="why-row"><span class="name why-total">Total CO₂e</span><span class="val why-total">${tv} ${tu}</span></div>`;
+}
+function buildWhyWater(totalKwh, totalWater) {
+  if (totalKwh <= 0) return `<div class="why-formula">Move a slider to see the breakdown.</div>`;
+  const [ev, eu] = format(totalKwh, "kWh");
+  const [tv, tu] = format(totalWater, "L");
+  const wue = currentWUE();
+  const ewif = currentEwif();
+  const climate = whyClimateBand().replace("_", "-");
+  const scope = includeEmbodied ? whyRow("Scope multiplier (+ embodied)", "× " + (1 + EMBODIED_PCT.water).toFixed(2)) : "";
+  return `<div class="why-formula">Energy × (on-site WUE + EWIF) × scope</div>${whyRow("Energy", `${ev} ${eu}`)}${whyRow(`On-site WUE (${climate} climate)`, `${wue.toFixed(2)} L/kWh`)}${whyRow(`EWIF (${whyRegionLabel()})`, `${ewif.toFixed(2)} L/kWh`)}${whyRow("Combined L/kWh", (wue + ewif).toFixed(2))}${scope}<div class="why-sep"></div><div class="why-row"><span class="name why-total">Total water</span><span class="val why-total">${tv} ${tu}</span></div>`;
+}
+
+function chartHeadingText() {
+  if (chartType === "doughnut") {
+    if (freq === "year") return "Share of total energy (annual)";
+    if (freq === "once") return "Share of total energy";
+    return "Share of total energy (annualized)";
+  }
+  return FREQ[freq].chartTitle;
+}
 function applyFreqCopy() {
   document.getElementById("footprintHeading").textContent = FREQ[freq].heading;
-  document.getElementById("chartHeading").textContent     = FREQ[freq].chartTitle;
+  document.getElementById("chartHeading").textContent     = chartHeadingText();
   document.getElementById("freqNote").innerHTML           = FREQ[freq].note;
   // also update Chart axis label on next render via recompute()
 }
@@ -1425,14 +1593,16 @@ function computeTotals(counts) {
 
 // Run computeTotals against a frozen scenario by temporarily swapping globals.
 function computeTotalsForScenario(s) {
-  const save = { region, subregion, dcLocation, freq, customCi, includeEmbodied, modelChoices };
+  const save = { region, subregion, dcLocation, freq, customCi, includeEmbodied, reasoningMode, modelChoices };
   region = s.region; subregion = s.subregion; dcLocation = s.dcLocation;
   freq = s.freq; customCi = s.customCi; includeEmbodied = s.includeEmbodied;
+  reasoningMode = !!s.reasoningMode;
   modelChoices = s.modelChoices;
   try { return computeTotals(s.counts); }
   finally {
     region = save.region; subregion = save.subregion; dcLocation = save.dcLocation;
     freq = save.freq; customCi = save.customCi; includeEmbodied = save.includeEmbodied;
+    reasoningMode = save.reasoningMode;
     modelChoices = save.modelChoices;
   }
 }
@@ -1459,7 +1629,7 @@ function applyPreset(name) {
 function captureScenario() {
   return {
     counts: readSliders(),
-    region, subregion, dcLocation, freq, customCi, includeEmbodied,
+    region, subregion, dcLocation, freq, customCi, includeEmbodied, reasoningMode,
     modelChoices: { ...modelChoices },
   };
 }
@@ -1491,9 +1661,26 @@ function describeScenarioA(s) {
     const dc = DC_PRESETS.find(d => d[0] === s.dcLocation);
     if (dc) loc += ` → ${dc[1]}`;
   }
-  const activeOps = Object.values(s.counts).filter(v => v > 0).length;
-  const freqLabel = s.freq === "once" ? "one-time" : (s.freq + " sliders");
-  return `A: ${loc} · ${activeOps} op${activeOps === 1 ? "" : "s"} · ${freqLabel}${s.includeEmbodied ? " · +embodied" : ""}`;
+  const freqLabel = s.freq === "once" ? "one-time event" : (s.freq === "year" ? "per year" : `per ${s.freq}`);
+  // Build inline op list, sorted by raw slider count (largest first), with model picks noted.
+  const opList = Object.entries(s.counts)
+    .filter(([op, v]) => v > 0 && OPS[op])
+    .sort((a,b) => b[1] - a[1]);
+  const opChips = opList.slice(0, 5).map(([op, v]) => {
+    const meta = OPS[op];
+    const modelId = s.modelChoices && s.modelChoices[op];
+    let label = meta.label;
+    if (modelId && MODELS[op]) {
+      const m = MODELS[op].find(x => x.id === modelId);
+      if (m) label = m.name.replace(/\s*\((measured|estimate|default)\)\s*$/, "");
+    }
+    const unit = meta.qtyUnit || "";
+    return `${label}: ${v}${unit ? " " + unit : ""}`;
+  });
+  if (opList.length > 5) opChips.push(`+${opList.length - 5} more`);
+  const line1 = `A: ${loc} · ${freqLabel}${s.includeEmbodied ? " · +embodied" : ""}`;
+  const line2 = opChips.length ? opChips.join(" · ") : "no operations selected";
+  return { line1, line2 };
 }
 
 function recompute() {
@@ -1523,6 +1710,14 @@ function recompute() {
   document.getElementById("vE").textContent = ev; document.getElementById("uE").textContent = " " + eu;
   document.getElementById("vC").textContent = cv; document.getElementById("uC").textContent = " " + cu;
   document.getElementById("vW").textContent = wv; document.getElementById("uW").textContent = " " + wu;
+  // Mirror to the mobile sticky bar (no-op on desktop where the element is hidden).
+  document.getElementById("mvE").textContent = ev; document.getElementById("muE").textContent = " " + eu;
+  document.getElementById("mvC").textContent = cv; document.getElementById("muC").textContent = " " + cu;
+  document.getElementById("mvW").textContent = wv; document.getElementById("muW").textContent = " " + wu;
+  // Populate the per-metric "Why this number?" panels with the actual math.
+  document.getElementById("whyE").innerHTML = buildWhyEnergy(rows, totalKwh);
+  document.getElementById("whyC").innerHTML = buildWhyCarbon(totalKwh, totalCO2g, B.ci);
+  document.getElementById("whyW").innerHTML = buildWhyWater(totalKwh, totalWater);
 
   // Uncertainty band — same multiplicative factor on each metric.
   const rE = document.getElementById("rE");
@@ -1540,7 +1735,9 @@ function recompute() {
   if (compareA) {
     const A = computeTotalsForScenario(compareA);
     renderDeltaLines(A, B);
-    document.getElementById("compareASummary").textContent = describeScenarioA(compareA);
+    const d = describeScenarioA(compareA);
+    document.getElementById("compareALine1").textContent = d.line1;
+    document.getElementById("compareALine2").textContent = d.line2;
   } else {
     document.getElementById("vsE").innerHTML = "&nbsp;";
     document.getElementById("vsC").innerHTML = "&nbsp;";
@@ -1632,45 +1829,76 @@ function renderChart(rows) {
   const labels = active.map(r => r.label);
   const data = active.map(r => r.kwh);
   const colors = active.map(r => CAT_COLOR[r.cat]);
+  const total = data.reduce((a,b) => a+b, 0);
 
   const ctx = document.getElementById("chart");
   if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: "bar",
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 4 }] },
-    options: {
-      indexAxis: "y",
-      animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (c) => {
-              const [v,u] = format(c.parsed.x, "kWh");
-              return ` ${v} ${u}`;
+  if (active.length === 0) {
+    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+    return;
+  }
+
+  if (chartType === "doughnut") {
+    const pctStr = (v) => {
+      const p = total > 0 ? (v / total * 100) : 0;
+      return p >= 10 ? p.toFixed(0) : (p >= 1 ? p.toFixed(1) : p.toFixed(2));
+    };
+    chart = new Chart(ctx, {
+      type: "doughnut",
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 1, borderColor: "#fff" }] },
+      options: {
+        animation: false, responsive: true, maintainAspectRatio: false, cutout: "55%",
+        plugins: {
+          legend: {
+            position: "right",
+            labels: {
+              font: { size: 11 }, boxWidth: 12, boxHeight: 12,
+              generateLabels: (ch) => {
+                const ds = ch.data.datasets[0];
+                return ch.data.labels.map((label, i) => ({
+                  text: `${label} — ${pctStr(ds.data[i])}%`,
+                  fillStyle: ds.backgroundColor[i], strokeStyle: ds.backgroundColor[i],
+                  lineWidth: 0, index: i,
+                }));
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (c) => {
+                const [v,u] = format(c.parsed, "kWh");
+                return ` ${v} ${u}  ·  ${pctStr(c.parsed)}%`;
+              }
             }
           }
         }
-      },
-      scales: {
-        x: {
-          type: "logarithmic",
-          title: { display: true, text: "Energy (kWh, log scale)" },
-          ticks: {
-            callback: (v) => {
-              const [val, unit] = format(v, "kWh");
-              return `${val} ${unit}`;
+      }
+    });
+  } else {
+    // Default: horizontal bar with logarithmic axis (handles 6-orders-of-magnitude spread).
+    chart = new Chart(ctx, {
+      type: "bar",
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 4 }] },
+      options: {
+        indexAxis: "y", animation: false, responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (c) => { const [v,u] = format(c.parsed.x, "kWh"); return ` ${v} ${u}`; }
             }
           }
         },
-        y: { ticks: { font: { size: 11 } } }
+        scales: {
+          x: {
+            type: "logarithmic",
+            title: { display: true, text: "Energy (kWh, log scale)" },
+            ticks: { callback: (v) => { const [val, unit] = format(v, "kWh"); return `${val} ${unit}`; } }
+          },
+          y: { ticks: { font: { size: 11 } } }
+        }
       }
-    }
-  });
-  if (active.length === 0) {
-    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+    });
   }
 }
 
@@ -1685,6 +1913,7 @@ function serializeState() {
   if (customCi != null)   params.set("ci", customCi);
   if (document.body.classList.contains("detail")) params.set("v", "d");
   if (includeEmbodied)    params.set("e", "1");
+  if (reasoningMode)      params.set("rm", "1");
   document.querySelectorAll(".op").forEach(opDiv => {
     const op = opDiv.dataset.op;
     if (!op) return;
@@ -1738,6 +1967,11 @@ function applyUrlState() {
     document.getElementById("mSimple").classList.remove("active");
   }
   if (params.get("e") === "1") includeEmbodied = true;
+  if (params.get("rm") === "1") {
+    reasoningMode = true;
+    const rChk = document.getElementById("reasoningChk");
+    if (rChk) rChk.checked = true;
+  }
 
   document.getElementById("region").value = region;
   if (SUBREGIONS[region]) populateSubregions(region);
@@ -1849,6 +2083,27 @@ function initEvents() {
       recompute();
     });
   });
+  document.querySelectorAll(".chart-toggle button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      chartType = btn.dataset.chart;
+      document.querySelectorAll(".chart-toggle button").forEach(b => b.classList.toggle("active", b.dataset.chart === chartType));
+      document.getElementById("chartHeading").textContent = chartHeadingText();
+      recompute();
+    });
+  });
+  document.getElementById("reasoningChk").addEventListener("change", e => {
+    reasoningMode = e.target.checked;
+    recompute();
+  });
+  document.querySelectorAll(".why-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const panel = btn.nextElementSibling;
+      if (!panel) return;
+      const open = panel.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = open ? "Hide" : "Why?";
+    });
+  });
   document.getElementById("compareBtn").addEventListener("click", () => {
     if (compareA) {
       compareA = null;
@@ -1868,6 +2123,9 @@ function initEvents() {
       input.value = input.defaultValue;
     });
     document.querySelectorAll(".presets .preset.active").forEach(b => b.classList.remove("active"));
+    reasoningMode = false;
+    const rChk = document.getElementById("reasoningChk");
+    if (rChk) rChk.checked = false;
     modelChoices = {};
     document.querySelectorAll("[data-model-for]").forEach(sel => { sel.value = ""; });
     dcLocation = "";
@@ -1911,7 +2169,6 @@ function initEvents() {
       t.value = window.location.href;
       document.body.appendChild(t); t.select();
       try { document.execCommand("copy"); btn.textContent = "✓ Copied!"; btn.classList.add("copied"); }
-
       catch (e2) { btn.textContent = "(Copy failed)"; }
       document.body.removeChild(t);
       setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1800);
