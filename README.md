@@ -1,6 +1,6 @@
 # AI Footprint Estimator
 
-An interactive tool to estimate the **energy consumption**, **carbon emissions**, and **water usage** of various AI operations adjusted to your local electricity grid and water use variables, as well as compute location.
+An interactive tool to estimate the **energy consumption**, **carbon emissions**, and **water usage** of various AI operations adjusted to your local electricity grid and water use variables.
 
 ## Overview
 
@@ -18,7 +18,7 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
 - **Custom AI workflows**: fine-tuning and training from scratch (LoRA, full fine-tune, GPT-3-class, frontier models)
 - **Region-aware carbon intensity**: 
   - 60+ countries with 2023 generation averages
-  - Sub-national precision: US states, Canadian provinces, Australian states, Chinese regional grids
+  - Sub-national precision: US states (eGRID 2024), Canadian provinces, Australian states, Chinese regional grids
 - **Compute location presets**: 
   - Major cloud providers (AWS, Azure, GCP with specific regions)
   - AI-lab estimated blends (Anthropic, OpenAI, Google Gemini)
@@ -29,12 +29,13 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
   - Covers Claude, GPT-4o, Gemini, Llama, Mistral, Gemma, Stable Diffusion, and others
 - **Multiple time scales**: per-day, per-week, per-month, per-year, or one-time calculations
 - **Operational + Embodied toggle**: See operational-only or add manufacturing/datacenter-building impact
+- **Extended thinking & reasoning modes**: Multiplier for advanced reasoning models (×30 energy multiplier)
 - **Two view modes**: 
   - Simple: clean layout with everyday equivalencies
   - Detailed: full per-operation breakdown table + methodology
 - **Comparison mode**: Snapshot scenario A, edit to create B, and see side-by-side deltas
 - **Shareable links**: Encode your exact scenario (all slider values, models, region, frequency) into a URL
-- **Responsive design**: Works on desktop, tablet, and mobile
+- **Responsive design**: Works on desktop, tablet, and mobile (with sticky results bar on mobile)
 
 ## Usage
 
@@ -44,14 +45,15 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
 4. **Compute location**: Select where the AI compute likely runs (major cloud regions, AI-lab blends, or your local grid)
 5. **Frequency**: Choose annualization (per-day ×365, per-week ×52, per-month ×12, per-year, or one-time)
 6. **Model picker**: For inference operations, select a specific model for precise energy figures
-7. **Sliders**: Adjust quantities for each AI operation
-8. **Results**: View annual (or one-time) energy, CO₂, and water; toggle between simple and detailed views
-9. **Compare**: Click "📊 Compare" to freeze your current scenario and edit to see deltas
-10. **Share**: Click "🔗 Copy share link" to generate a shareable URL
+7. **Reasoning mode**: For advanced reasoning models, toggle reasoning mode to apply ×30 energy multiplier
+8. **Sliders**: Adjust quantities for each AI operation
+9. **Results**: View annual (or one-time) energy, CO₂, and water; toggle between simple and detailed views
+10. **Compare**: Click "📊 Compare" to freeze your current scenario and edit to see deltas
+11. **Share**: Click "🔗 Copy share link" to generate a shareable URL
 
 ## Operations Included
 
-### Everyday AI Use (10 operations)
+### Everyday AI Use (12 operations)
 
 | Operation | Description | Examples |
 |-----------|-------------|----------|
@@ -64,7 +66,8 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
 | **AI voice / audio (per minute)** | Transcription, TTS, music gen | Whisper, ElevenLabs, Suno, Udio, ChatGPT voice mode |
 | **AI-generated image** | Picture from text prompt | Midjourney, DALL·E, Stable Diffusion, Adobe Firefly |
 | **AI-generated video (per second)** | Video from prompt or clip | OpenAI Sora, Google Veo, Runway Gen-3 |
-| **AI agents** (quick & complex) | Multi-step autonomous task | Inbox sorting, doc summarization, report writing, web browsing |
+| **AI agents (quick task)** | Multi-step autonomous task (~10 calls) | Inbox sorting, doc summarization, scheduling |
+| **AI agents (complex task)** | Extended multi-step task (~100 calls) | Report writing, coding agent, web browsing operator |
 
 ### Custom AI for Your Data (2 operations)
 
@@ -87,17 +90,18 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
 
 - **Inference energy (kWh/query)**: 
   - Open models: Hugging Face AI Energy Score (Dec 2025 leaderboard), measured on NVIDIA H100
-  - Proprietary models: Anchored to public benchmarks and Google's 2025 Gemini disclosure
-- **Training energy**: Patterson et al. (2021), Strubell et al., de Vries & Khanna
+  - Proprietary models: Anchored to public benchmarks and Google's 2025 Gemini disclosure (~0.24 Wh / median text prompt)
+- **Training energy**: Patterson et al. (2021), Strubell et al., de Vries & Khanna, Microsoft sustainability reports
 - **Grid carbon intensity (gCO₂/kWh)**: 
   - Countries: Ember Yearly Electricity Data 2024, IEA Electricity 2024
-  - US states: EPA eGRID 2022
+  - US states: Cornerstone eGRID 2024 community release (March 2026, pending official EPA eGRID2024)
   - Canadian provinces: Canada Energy Regulator / NIR 2023
   - Australian states: DCCEEW National Greenhouse Accounts 2023
-  - China: Ministry of Ecology & Environment Regional Grid factors
+  - China: Ministry of Ecology & Environment Regional Grid factors (2023)
 - **Water usage**: 
-  - On-site WUE (L/kWh): Ren et al. "Making AI Less Thirsty" (CACM 2025)
+  - On-site WUE (L/kWh): Ren et al. "Making AI Less Thirsty" (CACM 2025), climate-banded model (cold 0.2, cool 0.55, warm 0.85, hot-humid 1.4, hot-arid 1.75 L/kWh)
   - Off-site (electricity-generation) EWIF: Macknick et al. (NREL) technology factors + regional grid mix
+  - Microsoft global average reference: 0.30 L/kWh (FY24, down from FY21's 0.49)
 - **Equivalencies**: EPA Greenhouse Gas Equivalencies Calculator
 
 ### What's Included ✅
@@ -110,6 +114,7 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
   - Manufacturing GPUs, servers, and datacenter buildings
   - End-of-line semiconductor fab water
   - Applied as: +12% energy, +15% carbon, +25% water (mid-range multipliers)
+- **Reasoning model multiplier**: ×30 energy for extended thinking / reasoning modes
 
 ### What's Not Included ❌
 
@@ -126,6 +131,7 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
 - **Aggregated data**: Sub-national grids, seasonal variation, specific datacenter PUE not fully modeled
 - **Model estimates**: Not vendor-confirmed; based on public benchmarks and AI Energy Score leaderboard
 - **Embodied percentages**: Fixed multipliers; actual embodied share grows as operational decarbonizes
+- **Reasoning multiplier**: ×30 is a rough estimate; actual overhead varies by model and implementation
 
 ## Models Available
 
@@ -157,7 +163,7 @@ All numbers are **order-of-magnitude estimates** and useful for comparison, not 
 
 Click a preset to populate all sliders with representative usage patterns:
 
-- **Light user** — 3–5 searches/questions per day; casual user
+- **Light user** — 3 searches, 5 quick Q&As, 2 detailed answers, 1 image per day; casual user
 - **Typical** (default) — Moderate daily AI use (~10 searches, 20 quick Q&As, 10 detailed answers, 5 images)
 - **Power user** — Heavy daily usage; writer, marketer, knowledge worker
 - **Software dev** — In-IDE code assist, chat, embeddings, light agent tasks
@@ -178,8 +184,8 @@ Click a preset to populate all sliders with representative usage patterns:
 ## Technical Stack
 
 - **Vanilla JavaScript** (no frameworks or build tools)
-- **Chart.js 4.5.0** — for the energy comparison bar chart
-- **HTML5 + CSS3** — responsive design
+- **Chart.js 4.5.0** — for the energy comparison bar/doughnut chart
+- **HTML5 + CSS3** — responsive design with mobile sticky results bar
 - **Timezone-based geolocation** — auto-detect region
 
 ## Files
@@ -205,7 +211,7 @@ MIT License
 
 ## Built By
 
-- **Copilot (Claude)** — AI assistant, implementation
+- **Copilot (Claude, Opus 4.7)** — AI assistant, implementation
 - **Drew Wheadon** — Direction, concept, validation
 
 ## Feedback & Questions
@@ -215,5 +221,8 @@ MIT License
 
 ---
 
-**Last updated**: May 2026  
-**Data currency**: Electricity grid estimates (2023 generation averages, updated Nov 2024); Model energy benchmarks from December 2025 (Hugging Face AI Energy Score)
+**Last updated**: June 2026  
+**Data currency**: 
+- Electricity grid estimates: 2023 generation averages (US states updated to Cornerstone eGRID 2024 community release, March 2026)
+- Model energy benchmarks: December 2025 (Hugging Face AI Energy Score)
+- Water modeling: June 2026 (climate-banded on-site WUE refinement)
